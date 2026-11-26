@@ -1325,6 +1325,23 @@ body.tm #exWrap{display:block !important}
 body:not(.tm) #exlist .ex .ex-name{color:var(--ink)}
 body:not(.tm) #exlist .ex.done{opacity:.45}
 body:not(.tm) #exlist .ex.done .ex-state{display:block !important}
+/* Diagramm Eiweiß */
+.view[data-name="verlauf"] .chart{height:150px}
+.bcol{gap:2px !important}
+.bcol .bv{font-size:11px !important;height:14px !important;line-height:14px !important;color:var(--ink) !important;font-weight:600}
+.bcol .bar{opacity:1 !important;outline:none !important;border-radius:7px 7px 3px 3px !important;background:var(--line)}
+.bcol .bar.good{background:var(--green) !important}
+.bcol .bar.mid{background:#E3A52B !important}
+.bcol .bar.low{background:var(--red) !important}
+.bcol .bar.none{background:var(--line) !important}
+.bcol.today .bar{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--blue)}
+.bcol .bcl{height:20px !important;line-height:20px !important;font-size:12px !important;color:var(--muted) !important;border-radius:999px;padding:0 6px;min-width:26px;text-align:center;box-sizing:border-box}
+.bcol .bcl.trd{background:var(--blue);color:var(--on-accent) !important;font-weight:700}
+.bcol .bcl.tr::after,.bcol .bcl.trd::after{display:none !important}
+.bcol.today .bcl{font-weight:700;color:var(--ink) !important}
+.bcol.today .bcl.trd{color:var(--on-accent) !important}
+.chart .goal{z-index:2 !important;opacity:.9 !important;border-top-color:var(--ink) !important}
+.trk{display:inline-block;background:var(--blue);color:var(--on-accent);border-radius:999px;padding:0 6px;font-size:11px}
 </style>
 </head>
 <body>
@@ -1417,7 +1434,7 @@ body:not(.tm) #exlist .ex.done .ex-state{display:block !important}
       </div>
       <p class="wksum yest" id="wkYest"></p>
       <p class="wksum" id="wkSum"></p>
-      <p class="chl">Ø ohne heute · Eiweiß pro Tag, Linie 150 g</p>
+      <p class="chl">Ø ohne heute · Eiweiß pro Tag in g, Linie 150 g · <span class="trk">Tag</span> = Training</p>
       <div class="chart"><div class="goal" id="wkGoal"></div><div class="bars" id="wkChart"></div></div>
     </div>
 
@@ -2250,8 +2267,8 @@ body:not(.tm) #exlist .ex.done .ex-state{display:block !important}
     var best = orows.filter(function(r){ return r.vals.length > 1; }).map(function(r){ return {n:r.ex.name, p:(r.vals[r.vals.length - 1] - r.vals[0]) / r.vals[0] * 100}; }).sort(function(a, b){ return b.p - a.p; })[0];
     ov.innerHTML = '<div class="vchips big"><span class="up"><b>' + cUp + '</b> stärker</span><span><b>' + cSame + '</b> gleich</span><span class="down"><b>' + cDown + '</b> weniger</span>' + (cNew ? '<span><b>' + cNew + '</b> neu</span>' : '') + '</div>' + (best && best.p > 0.5 ? '<p class="vbest">Größter Sprung: <b>' + best.n + '</b> +' + f1(best.p) + ' %</p>' : '');
     $("#ovlMeta").textContent = "seit Start";
-    // Alle Trainings
     wrap.innerHTML = "";
+    if (true){ renderDataBox(); return; }
     var tf = foldEl("Alle Trainings", list.length + (list.length === 1 ? " Training" : " Trainings"));
     tf.el.classList.add("cardf");
     list.forEach(function(s){
@@ -3295,13 +3312,14 @@ body:not(.tm) #exlist .ex.done .ex-state{display:block !important}
     $("#wkP").textContent = aP ? aP + " g" : fallbk; $("#wkPb").style.width = Math.min(100, aP / GOAL_PROT * 100) + "%";
     $("#wkS").textContent = aS !== null ? f1(aS) + "/10" : fallbk; $("#wkSb").style.width = (aS !== null ? aS * 10 : 0) + "%";
     var maxP = Math.max(160, Math.max.apply(null, rs.map(function(x){ return x.r.prot; })));
-    $("#wkGoal").style.bottom = "calc(20px + (100% - 20px) * " + (GOAL_PROT / maxP).toFixed(3) + ")";
+    $("#wkGoal").style.bottom = "calc(24px + (100% - 42px) * " + (GOAL_PROT / maxP).toFixed(3) + ")";
     var ch = $("#wkChart"); ch.innerHTML = "";
     rs.forEach(function(x){
       var col = document.createElement("div"); col.className = "bcol" + (x.id === todayId() ? " today" : "");
-      var bar = document.createElement("i"); bar.className = "bar" + (x.r.prot >= GOAL_PROT - 5 ? " ok" : "");
-      bar.style.height = "max(3px, calc((100% - 20px) * " + (x.r.prot / maxP).toFixed(3) + "))"; bar.title = x.r.prot + " g Eiweiß";
-      var lb = document.createElement("span"); lb.className = "bcl" + (isTrainId(x.id) ? " tr" : ""); lb.textContent = x.id === todayId() ? "Heute" : dateOf(x.id).toLocaleDateString("de-DE", {weekday:"short"}).replace(".", "");
+      var pr = x.r.prot, bar = document.createElement("i"); bar.className = "bar " + (!pr ? "none" : pr >= GOAL_PROT - 10 ? "good" : pr >= GOAL_PROT * 0.7 ? "mid" : "low");
+      bar.style.height = pr ? "max(4px, calc((100% - 42px) * " + (pr / maxP).toFixed(3) + "))" : "4px"; bar.title = pr + " g Eiweiß";
+      var bv = document.createElement("span"); bv.className = "bv"; bv.textContent = pr ? String(pr) : ""; col.appendChild(bv);
+      var trd = isRealSession(sessionById(x.id) || {}), lb = document.createElement("span"); lb.className = "bcl" + (trd ? " trd" : ""); lb.textContent = x.id === todayId() ? "Heute" : dateOf(x.id).toLocaleDateString("de-DE", {weekday:"short"}).replace(".", "");
       col.dataset.id = x.id; col.setAttribute("role", "button"); col.addEventListener("click", function(){ hlDay(x.id); });
       col.appendChild(bar); col.appendChild(lb); ch.appendChild(col);
     });
@@ -3369,8 +3387,9 @@ body:not(.tm) #exlist .ex.done .ex-state{display:block !important}
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "2.7", APP_BUILT = "2026-11-26T21:42:30Z";
+  var APP_VERSION = "2.8", APP_BUILT = "2026-11-26T21:45:17Z";
   var CHANGES = [
+    ["2.8", "Verlauf: klareres Diagramm, Trainingstage markiert, Alle Trainings entfernt"],
     ["2.7", "Erledigte Übungen ausgegraut, Erholungs-Karte entfernt"],
     ["2.6", "Ruhetag ohne Tipps"],
     ["2.5", "Verlauf aufgeräumt, Ruhetag ohne Übungsliste"],
