@@ -1285,6 +1285,25 @@ body:not(.tm) .list{margin-top:0 !important}
 .wkc-t{display:block;font-size:12.5px;font-weight:700;color:var(--green);margin-bottom:4px}
 .weekcard p{margin:0;font-size:15.5px;line-height:1.45}
 body.tm .weekcard{display:none !important}
+/* Bewertung sichtbar */
+.sets .setrow .srate[data-r]:not([data-r=""]){font-size:12.5px !important;padding:0 4px !important;color:#fff !important;-webkit-text-fill-color:#fff}
+.sets .setrow .srate[data-r="easy"],.sets .setrow .srate[data-r="leicht"]{background:#3E7BD6 !important;border-color:#3E7BD6 !important}
+.sets .setrow .srate[data-r="passt"]{background:#23935A !important;border-color:#23935A !important}
+.sets .setrow .srate[data-r="hart"]{background:#C98A12 !important;border-color:#C98A12 !important}
+.sets .setrow .srate[data-r="vhart"]{background:#D86A1C !important;border-color:#D86A1C !important}
+.sets .setrow .srate[data-r="limit"],.sets .setrow .srate[data-r="fail"]{background:#C8303B !important;border-color:#C8303B !important}
+.rdgrid button.cur{outline:3px solid var(--blue);outline-offset:2px}
+.rdreset{all:unset;cursor:pointer;display:block;margin:12px auto 0;padding:6px 10px;font-size:14px;font-weight:600;color:var(--red);text-decoration:underline;text-underline-offset:3px}
+.rdreset[hidden]{display:none}
+.tmedit{all:unset;box-sizing:border-box;display:block;width:100%;text-align:center;padding:15px;margin:12px 0 6px;border-radius:16px;font-weight:700;cursor:pointer;background:var(--surface);border:1.5px solid var(--line);color:var(--ink)}
+.tmedit.todo{background:linear-gradient(135deg,var(--blue),color-mix(in srgb,var(--blue) 72%,#000));border-color:transparent;color:var(--on-accent)}
+.tmedit[hidden],body.tm .tmedit{display:none !important}
+.tmedit:focus-visible{outline:3px solid var(--blue)}
+.durb{all:unset;cursor:pointer;display:inline-block;margin:6px 0 2px;padding:6px 10px;border-radius:10px;background:var(--bg);font-size:13px;font-weight:600;color:var(--ink)}
+.durb:focus-visible{outline:3px solid var(--blue)}
+.durf{display:flex;gap:8px;margin:8px 0 4px}
+.durf input{flex:1;min-width:0;height:42px;border-radius:10px;border:1px solid var(--line);background:var(--field);color:var(--ink);font-size:17px;text-align:center;font-family:var(--cond);font-weight:600}
+.durf .btn{min-height:42px;border-radius:10px;padding:0 14px}
 </style>
 </head>
 <body>
@@ -1337,6 +1356,7 @@ body.tm .weekcard{display:none !important}
     <button type="button" class="tmtest" id="tmTest" hidden>Testtraining (zählt nicht)</button>
     <button type="button" class="showex" id="showEx" hidden>Übungen anzeigen</button>
     <button type="button" class="tmany" id="tmAny" hidden>Heute trotzdem trainieren</button>
+    <button type="button" class="tmedit" id="tmEdit" hidden></button>
     <div id="exWrap">
     <h3 class="exh" id="exHead"></h3>
     <ol class="list" id="exlist"></ol>
@@ -1550,7 +1570,7 @@ body.tm .weekcard{display:none !important}
 <div class="ratedlg" id="rateDlg" hidden><div class="rdbox"><div class="rdt">Wie war der Satz?</div><div class="rds" id="rdSub"></div><div class="rdgrid">
 <button type="button" data-r="leicht"><b>🙂</b><small>Leicht</small></button><button type="button" data-r="passt"><b>💪</b><small>Genau richtig</small></button><button type="button" data-r="hart"><b>😤</b><small>Schwer</small></button>
 <button type="button" data-r="vhart"><b>🥵</b><small>Sehr schwer</small></button><button type="button" data-r="limit"><b>🔥</b><small>Am Limit</small></button><button type="button" data-r="fail"><b>💀</b><small>Über dem Limit</small></button>
-</div><p class="rdh">Ideal ist „Genau richtig“ bis „Schwer“. Daraus kommt dein nächstes Ziel.</p></div></div>
+</div><p class="rdh">Ideal ist „Genau richtig“ bis „Schwer“. Daraus kommt dein nächstes Ziel.</p><button type="button" class="rdreset" id="rdReset" hidden>Satz zurücksetzen</button></div></div>
 <script>
 (function(){
   "use strict";
@@ -1992,7 +2012,8 @@ body.tm .weekcard{display:none !important}
       '<span class="x" aria-hidden="true">×</span>' +
       '<label class="num"><input class="' + (cls ? "d-reps" : "s-reps") + '"' + (i !== null ? ' data-i="' + i + '"' : '') + ' inputmode="numeric" autocomplete="off" placeholder="' + ph + '" aria-label="' + repLabel + '"></label><button type="button" class="srate" data-r="" aria-label="Bewertung ' + label + '">Fertig</button><div class="rchips" role="group" aria-label="Wie nah am Limit war der Satz?"><button type="button" data-r="easy">Locker</button><button type="button" data-r="leicht">Mittel</button><button type="button" data-r="passt">Ziel genau</button><button type="button" data-r="hart">Sehr hart</button><button type="button" data-r="limit">Am Limit</button><button type="button" data-r="fail">Über Limit</button></div></div>';
   }
-  function setSR(btn, r){ btn.dataset.r = r || ""; btn.textContent = r ? "✓" : "Fertig"; var rw = btn.closest(".setrow"); if (rw){ rw.classList.toggle("done", !!r); $$(".rchips button", rw).forEach(function(c){ c.classList.toggle("on", c.dataset.r === r); }); } btn.className = "srate" + (r ? " r-" + r : ""); }
+  var RATE_EMO = {easy:"😴", leicht:"🙂", passt:"💪", hart:"😤", vhart:"🥵", limit:"🔥", fail:"💀"}, RATE_SHORT = {easy:"Leicht", leicht:"Leicht", passt:"Richtig", hart:"Schwer", vhart:"Sehr", limit:"Limit", fail:"Über"};
+  function setSR(btn, r){ btn.dataset.r = r || ""; btn.textContent = r ? RATE_EMO[r] + " " + RATE_SHORT[r] : "Fertig"; btn.setAttribute("aria-label", r ? "Bewertung: " + RATINGS[r] + ". Tippen zum Ändern" : "Satz fertig"); var rw = btn.closest(".setrow"); if (rw){ rw.classList.toggle("done", !!r); $$(".rchips button", rw).forEach(function(c){ c.classList.toggle("on", c.dataset.r === r); }); } btn.className = "srate" + (r ? " r-" + r : ""); }
   function nextSetLabel(ex, li, i){ var k = $$(".s-kg", li)[i + 1], rp = $$(".s-reps", li)[i + 1]; return ex.name + " · Satz " + (i + 2) + (k && k.value ? " · " + k.value + " kg" : "") + (rp && rp.placeholder ? " × " + rp.placeholder : ""); }
   function nextExLabel(nx){ var nli = $('.ex[data-id="' + nx.id + '"]'), k = nli && $(".s-kg", nli), rp = nli && $(".s-reps", nli); return "Weiter: " + nx.name + (k && k.value ? " · " + k.value + " kg" : "") + (rp && rp.placeholder ? " × " + rp.placeholder : ""); }
   function bestRun(f){ var b = null; sessions.forEach(function(s){ if (!isTrainId(s.id)) return; var e = s.entries && s.entries.rennen, v = e ? clean(e[f]) : null; if (v !== null && (b === null || v > b)) b = v; }); return b; }
@@ -2113,6 +2134,10 @@ body.tm .weekcard{display:none !important}
     var exWrap = $("#exWrap"), showBtn = $("#showEx"), tt1 = trState(), finished = !!(tt1 && tt1.e && (Date.parse(tt1.e) - Date.parse(tt1.s)) >= 300000);
     exWrap.hidden = false; showBtn.hidden = true;
     $("#tmAny").hidden = isTrain || finished;
+    var tsE = todaySession(), hasE = !!(tsE && isRealSession(tsE)), openR = PLAN.filter(function(ex){ var e = todayEntry(ex.id); return e && !exDoneEntry(ex, e); }).length;
+    var eb = $("#tmEdit"); eb.hidden = !(finished && hasE);
+    eb.textContent = openR ? "⭐ Heutiges Training bewerten (" + openR + " offen)" : "✎ Heutiges Training ansehen / ändern";
+    eb.classList.toggle("todo", openR > 0);
     $("#exHead").textContent = isTrain ? "Heute · " + planName() + " · " + STRENGTH.length + " Übungen" : (sub ? sub + " · " : "") + planName();
     renderSleep(); renderScores(); renderFocus();
   }
@@ -2141,9 +2166,12 @@ body.tm .weekcard{display:none !important}
     var min = s.tr && s.tr.s && s.tr.e ? Math.round((Date.parse(s.tr.e) - Date.parse(s.tr.s)) / 60000) : null;
     return {vol:v, sets:n, ex:ex, min:min};
   }
+  function hm(min){ var h = Math.floor(min / 60), m = min % 60; return h ? h + ":" + pad(m) + " h" : m + " min"; }
+  function parseDur(t){ t = String(t || "").trim().toLowerCase(); var m = /^(\d{1,2})\s*(?:[:.h]|std)\s*(\d{1,2})?\s*(?:m|min)?$/.exec(t); if (m) return Number(m[1]) * 60 + Number(m[2] || 0); m = /^(\d{1,3})\s*(?:m|min)?$/.exec(t); return m ? Number(m[1]) : null; }
   function repsLine(e){ var st = entrySets(e).filter(function(x){ return x.reps > 0; }); if (!st.length) return ""; var k0 = st[0].kg, same = st.every(function(x){ return x.kg === k0; });
-    var t = same ? fmt(k0) + " kg · " + st.map(function(x){ return x.reps; }).join("/") : st.map(function(x){ return fmt(x.kg) + "×" + x.reps; }).join(", ");
-    var dk = cleanKg(e.dropKg), dr = clean(e.dropReps); if (dk && dr) t += " + Drop " + fmt(dk) + "×" + dr; return t; }
+    var em = function(x){ return x.rating && RATE_EMO[x.rating] ? RATE_EMO[x.rating] : ""; };
+    var t = same ? fmt(k0) + " kg · " + st.map(function(x){ return x.reps + em(x); }).join(" / ") : st.map(function(x){ return fmt(x.kg) + "×" + x.reps + em(x); }).join(", ");
+    var dk = cleanKg(e.dropKg), dr = clean(e.dropReps), drr = rating(e.dropRating); if (dk && dr) t += " + Drop " + fmt(dk) + "×" + dr + (drr ? RATE_EMO[drr] : ""); return t; }
   function nextTarget(ex, e, date){
     var sg = suggest(ex, {e:e, date:date}), k = sg.sets[0], r = sg.reps[0];
     var cls = sg.plateau ? "deload" : sg.delta > 0 ? "up" : sg.delta < 0 ? "down" : sg.repDelta > 0 ? "rep" : "same";
@@ -2187,7 +2215,7 @@ body.tm .weekcard{display:none !important}
     var vtr = prevS && prevS.vol ? trend(st.vol, prevS.vol) : null;
     var ups = rows.filter(function(r){ return r.tr.cls === "up"; }).length;
     var h = '<div class="khead"><h2>' + (L.id === todayId() ? "Heutiges Training" : "Letztes Training") + '</h2><span class="fm">' + dateShort(L.id) + '</span></div>';
-    h += '<div class="vchips">' + (st.min ? '<span><b>' + st.min + '</b> min</span>' : '') + '<span><b>' + st.ex + '</b> Übungen</span><span><b>' + st.sets + '</b> Sätze</span><span><b>' + Math.round(st.vol).toLocaleString("de-DE") + '</b> kg' + (vtr && vtr.cls !== "new" ? ' <em class="' + vtr.cls + '">' + vtr.tx + '</em>' : '') + '</span></div>';
+    h += '<div class="vchips">' + (st.min ? '<span><b>' + hm(st.min).replace(/ (h|min)$/, "") + '</b> ' + (st.min >= 60 ? "h" : "min") + '</span>' : '') + '<span><b>' + st.ex + '</b> Übungen</span><span><b>' + st.sets + '</b> Sätze</span><span><b>' + Math.round(st.vol).toLocaleString("de-DE") + '</b> kg' + (vtr && vtr.cls !== "new" ? ' <em class="' + vtr.cls + '">' + vtr.tx + '</em>' : '') + '</span></div>';
     var allNew = rows.every(function(r){ return r.tr.cls === "new"; }), prs = rows.filter(function(r){ return r.tr.cls === "pr"; }).length;
     h += '<p class="vsum">' + (allNew ? 'Erstes Training mit diesen Übungen. Ab dem nächsten Mal siehst du hier deine Steigerung.' : (ups + prs) ? '💪 Bei <b>' + (ups + prs) + ' von ' + rows.length + '</b> Übungen stärker als letztes Mal' + (prs ? ', davon <b>' + prs + ' Rekord' + (prs === 1 ? '' : 'e') + '</b> 🏆' : '') + '.' : 'Diesmal keine Steigerung. Halte das Gewicht und hol dir mehr Wiederholungen.') + '</p>';
     h += '<ul class="vex">' + rows.map(function(r){
@@ -2213,8 +2241,9 @@ body.tm .weekcard{display:none !important}
       var x = sessStats(s), box = document.createElement("div"); box.className = "vsess";
       var hd = document.createElement("div"); hd.className = "vsh";
       var a = document.createElement("b"); a.textContent = dateLong(s.id);
-      var b = document.createElement("span"); b.textContent = [x.min ? x.min + " min" : null, x.ex + " Übungen", Math.round(x.vol).toLocaleString("de-DE") + " kg"].filter(Boolean).join(" · ");
+      var b = document.createElement("span"); b.textContent = [x.ex + " Übungen", Math.round(x.vol).toLocaleString("de-DE") + " kg"].join(" · ");
       hd.appendChild(a); hd.appendChild(b); box.appendChild(hd);
+      if (mode === "db" || mode === "local"){ var du = document.createElement("button"); du.type = "button"; du.className = "durb"; du.dataset.id = s.id; du.textContent = x.min ? "⏱ " + hm(x.min) + " · ändern" : "⏱ Dauer eintragen"; box.appendChild(du); }
       var ul = document.createElement("ul"); ul.className = "vsl";
       ALLSTR.forEach(function(ex){ if (!entryOk(ex, s)) return; var li = document.createElement("li"); var n = document.createElement("span"); n.textContent = ex.name; var v = document.createElement("span"); v.className = "vv"; v.textContent = repsLine(s.entries[ex.id]); li.appendChild(n); li.appendChild(v); ul.appendChild(li); });
       box.appendChild(ul);
@@ -2232,8 +2261,28 @@ body.tm .weekcard{display:none !important}
     var id = "2026-11-26", s0 = sessionById(id); if (!s0) return;
     var cut = Date.parse("2026-11-26T20:30:00Z"), ent = s0.entries || {}, keep = {}, changed = false;
     Object.keys(ent).forEach(function(k){ var at = ent[k] && Date.parse(ent[k].at); if (at && at < cut) changed = true; else keep[k] = ent[k]; });
-    var trOld = s0.tr && Date.parse(s0.tr.s) < cut;
+    var trOld = s0.tr && Date.parse(s0.tr.s) < cut && (!s0.tr.e || Date.parse(s0.tr.e) < cut);
     if (changed || trOld) saveSessionPatch({entries:keep, tr: trOld ? null : s0.tr}, id).catch(function(){});
+  }
+  var seeded = false;
+  function seedToday(){
+    if (seeded || todayId() !== "2026-11-26" || (!firstSync.tr && mode === "db") || !(mode === "db" || mode === "local")) return; seeded = true;
+    // Nur mit frischem Stand vom Server, damit nie etwas überschrieben wird
+    if (SB) { SB.db.fresh("data/users/" + SB.uid).then(function(){ setTimeout(doSeedToday, 0); }, function(){ seeded = false; }); return; }
+    doSeedToday();
+  }
+  function doSeedToday(){
+    var id = todayId(), s0 = sessionById(id), cut = Date.parse("2026-11-26T20:30:00Z");
+    var real = s0 && s0.entries && Object.keys(s0.entries).some(function(k){ var at = Date.parse(s0.entries[k] && s0.entries[k].at); return at && at >= cut; });
+    if (real) return;
+    var at = "2026-11-26T21:31:00.000Z", entries = {};
+    STRENGTH.forEach(function(ex){
+      var sg = suggest(ex), sets = [];
+      for (var i = 0; i < ex.sets; i++) sets.push({kg:sg.sets[i], reps:sg.reps[i] != null ? sg.reps[i] : ex.pr[i], rating:""});
+      entries[ex.id] = {v:2, kg:sets[0].kg, sets:sets, dropKg: ex.drop ? sg.dropKg : null, dropReps: ex.drop ? (sg.dropReps != null ? sg.dropReps : ex.dropPr) : null, rating:"", dropRating:"", at:at};
+    });
+    var end = Date.parse("2026-11-26T21:30:00.000Z");
+    saveSessionPatch({entries:entries, tr:{s:new Date(end - 84 * 60000).toISOString(), e:new Date(end).toISOString(), t:0}}, id).catch(function(){});
   }
   function renderTraining(){ PLAN.forEach(refreshRow); renderDay(); renderHistory(); renderNote(); renderBW(); }
 
@@ -3293,8 +3342,9 @@ body.tm .weekcard{display:none !important}
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "2.3", APP_BUILT = "2026-11-26T21:13:11Z";
+  var APP_VERSION = "2.4", APP_BUILT = "2026-11-26T21:24:31Z";
   var CHANGES = [
+    ["2.4", "Bewertung pro Satz sichtbar und änderbar, Training nachträglich bewerten, Dauer im Verlauf ändern"],
     ["2.3", "Sonntags ein kurzer Satz zu deiner Woche"],
     ["2.2", "Wasser in Getränken (z. B. Whey mit 400 ml Wasser) zählt automatisch zum Wasser"],
     ["2.1", "Heute gegessen nach Tageszeit, kompakt mit Antippen für Aktionen. Schnell hinzufügen als Kacheln mit Suche. Verlauf zeigt heute."],
@@ -3601,7 +3651,7 @@ body.tm .weekcard{display:none !important}
     window.addEventListener("pageshow", function(ev){ if (ev.persisted){ flush(); refreshAll(); } });
     setInterval(function(){ if (!document.hidden){ flush(); refreshAll(); } }, 60000);
     setTimeout(function(){ state(); flush(); }, 0);
-    return {collection:function(p){ return Coll(p); }, doc:Doc, pending:function(){ return pend.length; }, flush:flush, wipe:function(){ dead = true; clearTimeout(cacheT); clearTimeout(retryT); lsSet(CK, null); lsSet(PK, null); }};
+    return {collection:function(p){ return Coll(p); }, doc:Doc, pending:function(){ return pend.length; }, flush:flush, fresh:function(p){ return refresh(p); }, wipe:function(){ dead = true; clearTimeout(cacheT); clearTimeout(retryT); lsSet(CK, null); lsSet(PK, null); }};
   }
 
   function authMsg(e){
@@ -3661,7 +3711,7 @@ body.tm .weekcard{display:none !important}
     var o = loadLocal(LKEY), f = loadLocal(FKEY), w = loadLocal(WKEY);
     if (o === null){ mode = "readonly"; setBanner("Speichern ist hier nicht verfügbar. Öffne die Seite in Claude, um einzutragen."); }
     else { mode = "local"; sessions = sessionsFromLocal(o); foodDays = f ? foodFromLocal(f) : []; waterDays = w ? waterFromLocal(w) : []; updateSyncBanner(); }
-    updateSyncBanner(); readyResolve(); renderTraining(); renderFood(); renderWater(); if (mode === "local") purgeTests();
+    updateSyncBanner(); readyResolve(); renderTraining(); renderFood(); renderWater(); if (mode === "local"){ purgeTests(); seedToday(); }
   }
   var unsubT = null, unsubF = null;
   function subscribeTraining(){
@@ -3672,7 +3722,7 @@ body.tm .weekcard{display:none !important}
       });
       known = {}; sessions.forEach(function(s){ known[s.id] = true; });
       firstSync.tr = true; updateSyncBanner();
-      renderTraining(); purgeTests();
+      renderTraining(); purgeTests(); seedToday();
     }, function(err){
       if (err && (err.code === "unavailable" || err.code === "deadline-exceeded" || err.code === "aborted")){ setTimeout(subscribeTraining, 3000); return; }
       firstSync.tr = true; updateSyncBanner();
@@ -3777,7 +3827,7 @@ body.tm .weekcard{display:none !important}
     if (sr){ var row = sr.closest(".setrow"), isDrop = row.classList.contains("drop"), inp = $(isDrop ? ".d-reps" : ".s-reps", row), cur = sr.dataset.r || "";
       var tag2 = isDrop ? "d" : "s" + $$(".setrow:not(.drop) .srate", li).indexOf(sr);
       if (!cur){ if (inp) onSetDone(inp); else openRateDialog(ex, li, sr); return; }
-      if (inp) inp.value = inp.placeholder || ""; setSR(sr, null); li.classList.remove("tmfin"); if (autoDone[ex.id]) delete autoDone[ex.id][tag2]; markDirty(ex.id); autoSave(ex, li); tmUpdate(); return; }
+      openRateDialog(ex, li, sr, null, {change:true, undo:function(){ if (inp) inp.value = inp.placeholder || ""; setSR(sr, null); li.classList.remove("tmfin"); if (autoDone[ex.id]) delete autoDone[ex.id][tag2]; markDirty(ex.id); autoSave(ex, li); tmUpdate(); }}); return; }
     var chip = ev.target.closest(".chip");
     if (chip){
       var on = chip.getAttribute("aria-pressed") !== "true";
@@ -3917,6 +3967,13 @@ body.tm .weekcard{display:none !important}
     var li = $('.ex[data-id="' + PLAN[i].id + '"]'); if (!li) return;
     setOpen(li, true); refreshRow(PLAN[i]); window.scrollTo(0, 0); tmUpdate();
   }
+  function tmRetro(){ try { return localStorage.getItem("fit-retro") === todayId(); } catch (e) { return false; } }
+  function tmEdit(){
+    try { localStorage.setItem("fit-retro", todayId()); localStorage.setItem("fit-tm", todayId()); } catch (e) {}
+    document.body.classList.add("tm");
+    var first = 0; for (var i = 0; i < PLAN.length; i++){ if (!exDoneEntry(PLAN[i], todayEntry(PLAN[i].id))){ first = i; break; } }
+    tmGo(first);
+  }
   function tmStart(){
     document.body.classList.add("tm"); try { localStorage.setItem("fit-tm", todayId()); } catch (e) {}
     var first = 0; for (var i = 0; i < PLAN.length; i++){ if (!exDoneEntry(PLAN[i], todayEntry(PLAN[i].id))){ first = i; break; } }
@@ -3948,11 +4005,11 @@ body.tm .weekcard{display:none !important}
     $("#tmDoneFig").innerHTML = '<div class="tdfw">' + fullBody(hit) + '<span class="tdv l">Vorne</span><span class="tdv r">Hinten</span></div>' +
       (hit.p.length ? '<div class="tdm">' + uniqNames(hit.p).map(function(n){ return '<span class="p">' + n + '</span>'; }).join("") + '</div>' + (function(){ var sn = uniqNames(hit.s).filter(function(n){ return uniqNames(hit.p).indexOf(n) < 0; }); return sn.length ? '<p class="tdn">Mittrainiert: ' + sn.join(", ") + '</p>' : ""; })() : '<p class="tdn">Noch kein Satz abgehakt.</p>');
     $("#tmDoneL").innerHTML = rws.map(function(r){ return '<li><div><b>' + r.ex.name + '</b><span class="vnext ' + r.nt.cls + '">Nächstes Mal: <b>' + r.nt.tx + '</b></span></div><span class="vt ' + r.tr.cls + '">' + r.tr.tx + '</span></li>'; }).join("");
-    $("#tmDoneS").innerHTML = [[min || 0, "Minuten"], [n + "/" + PLAN.length, "Übungen"], [sets, "Sätze"], [Math.round(vol).toLocaleString("de-DE"), "kg bewegt"]].map(function(x){ return '<div><b>' + x[0] + '</b><span>' + x[1] + '</span></div>'; }).join("");
+    $("#tmDoneS").innerHTML = [[min ? (min >= 60 ? Math.floor(min / 60) + ":" + pad(min % 60) : min) : "–", min >= 60 ? "Stunden" : "Minuten"], [n + "/" + PLAN.length, "Übungen"], [sets, "Sätze"], [Math.round(vol).toLocaleString("de-DE"), "kg bewegt"]].map(function(x){ return '<div><b>' + x[0] + '</b><span>' + x[1] + '</span></div>'; }).join("");
     $("#tmDone").hidden = false;
   }
   $("#tmDoneOk").addEventListener("click", function(){ $("#tmDone").hidden = true; tmStop(); });
-  function tmStop(){ var t1 = trState(); if (t1 && !t1.e){ var eI = new Date().toISOString(); trSave({s:t1.s, e:eI, t:t1.t || 0}); if (!t1.t) showDone(t1.s, eI); } document.body.classList.remove("tm"); try { localStorage.removeItem("fit-tm"); } catch (e) {} $$(".ex.open").forEach(function(o){ setOpen(o, false); }); stopTimer(); tmUpdate(); window.scrollTo(0, 0); }
+  function tmStop(){ var t1 = trState(); if (t1 && !t1.e){ var eI = new Date().toISOString(); trSave({s:t1.s, e:eI, t:t1.t || 0}); if (!t1.t) showDone(t1.s, eI); } document.body.classList.remove("tm"); try { localStorage.removeItem("fit-tm"); localStorage.removeItem("fit-retro"); } catch (e) {} $$(".ex.open").forEach(function(o){ setOpen(o, false); }); stopTimer(); tmUpdate(); window.scrollTo(0, 0); }
   function restoreTm(){
     try { if (localStorage.getItem("fit-tm") === todayId()){ document.body.classList.add("tm"); restoreOpen(); if (!$(".ex.open")){ var f = 0; for (var i = 0; i < PLAN.length; i++){ if (!exDoneEntry(PLAN[i], todayEntry(PLAN[i].id))){ f = i; break; } } tmGo(f); } } } catch (e) {}
     tmUpdate();
@@ -3966,12 +4023,15 @@ body.tm .weekcard{display:none !important}
   });
   $("#tmStart").addEventListener("click", tmStart);
   $("#tmAny").addEventListener("click", tmStart);
+  $("#tmEdit").addEventListener("click", tmEdit);
   $("#tmExit").addEventListener("click", tmStop);
   $("#tmPrev").addEventListener("click", function(){ tmGo(tmIdx() - 1); });
   $("#tmNext").addEventListener("click", function(){ if (tmIdx() >= PLAN.length - 1) finishTraining(true); else tmGo(tmIdx() + 1); });
   var rateCtx = null;
-  function openRateDialog(ex, li, srateBtn, afterFn){
-    rateCtx = {exId: ex.id, li: li, btn: srateBtn, after: afterFn};
+  function openRateDialog(ex, li, srateBtn, afterFn, opts){
+    rateCtx = {exId: ex.id, li: li, btn: srateBtn, after: afterFn, opts: opts || null};
+    $("#rdReset").hidden = !(opts && opts.change);
+    $$("#rateDlg .rdgrid button").forEach(function(b){ b.classList.toggle("cur", !!(opts && opts.change) && b.dataset.r === srateBtn.dataset.r); });
     var row = srateBtn.closest(".setrow"), k = row && $(".s-kg,.d-kg", row), rp = row && $(".s-reps,.d-reps", row);
     $("#rdSub").textContent = ex.name + " · " + (row ? $(".sl", row).textContent : "") + (k && k.value ? " · " + k.value + " kg" : "") + (rp && rp.value ? " × " + rp.value : "");
     $("#rateDlg").hidden = false;
@@ -3979,6 +4039,7 @@ body.tm .weekcard{display:none !important}
   function closeRateDialog(){ $("#rateDlg").hidden = true; rateCtx = null; }
   $("#rateDlg").addEventListener("click", function(ev){
     if (ev.target.id === "rateDlg"){ closeRateDialog(); return; }
+    if (ev.target.id === "rdReset"){ var cx = rateCtx; closeRateDialog(); if (cx && cx.opts && cx.opts.undo) cx.opts.undo(); return; }
     var b = ev.target.closest("button[data-r]"); if (!b || !rateCtx) return;
     var ctx = rateCtx, exr = BYID[ctx.exId];
     setSR(ctx.btn, b.dataset.r); markDirty(exr.id); autoSave(exr, ctx.li); maybeClose(exr, ctx.li);
@@ -4035,12 +4096,12 @@ body.tm .weekcard{display:none !important}
     var li = t.closest(".ex"), ex = BYID[li.dataset.id], row = t.closest(".setrow");
     if (!(num(t.value) > 0) && num(t.placeholder) > 0) t.value = t.placeholder;
     if (!(num(t.value) > 0)){ toast("Trag die Wiederholungen ein."); t.focus(); return; }
-    if (TRAIN_DAYS.indexOf(new Date().getDay()) >= 0) autoStart();
+    if (TRAIN_DAYS.indexOf(new Date().getDay()) >= 0 && !tmRetro()) autoStart();
     var rb0 = $(".srate", row), i = isSet ? Number(t.dataset.i) : -1;
     var st = autoDone[ex.id] || (autoDone[ex.id] = {}); st[isDrop ? "d" : "s" + i] = true;
     var pex0 = partnerOf(ex);
     var doPacing = function(){
-      if (!rb0.dataset.r) return;
+      if (!rb0.dataset.r || tmRetro()) return;
       if (pex0){ pairFlow(ex, pex0, li, isSet, isDrop, i); return; }
       var doneMain = $$(".setrow:not(.drop) .srate", li).map(function(b){ return !!b.dataset.r; });
       var allMain = doneMain.every(Boolean), dropOk = !ex.drop || dropDone(li);
@@ -4063,6 +4124,20 @@ body.tm .weekcard{display:none !important}
 
   var delTimer = null;
   $("#history").addEventListener("click", function(ev){
+    var du = ev.target.closest(".durb");
+    if (du){
+      var s0 = sessionById(du.dataset.id), cur = s0 && s0.tr && s0.tr.s && s0.tr.e ? Math.round((Date.parse(s0.tr.e) - Date.parse(s0.tr.s)) / 60000) : 0;
+      var f = document.createElement("div"); f.className = "durf";
+      var inp = document.createElement("input"); inp.inputMode = "numeric"; inp.placeholder = "z. B. 1:24"; inp.value = cur ? Math.floor(cur / 60) + ":" + pad(cur % 60) : ""; inp.setAttribute("aria-label", "Dauer (Stunden:Minuten)");
+      var ok = document.createElement("button"); ok.type = "button"; ok.className = "btn primary"; ok.textContent = "Speichern";
+      f.appendChild(inp); f.appendChild(ok); du.replaceWith(f); inp.focus();
+      ok.addEventListener("click", function(){
+        var min = parseDur(inp.value); if (!min || min < 1 || min > 600){ toast("Dauer eingeben, z. B. 1:24"); inp.focus(); return; }
+        var id = du.dataset.id, ss = sessionById(id), e = ss && ss.tr && ss.tr.e ? Date.parse(ss.tr.e) : dateOf(id).getTime() + 20 * 3600000;
+        saveSessionPatch({tr:{s:new Date(e - min * 60000).toISOString(), e:new Date(e).toISOString(), t:0}}, id).then(function(){ toast("Dauer: " + hm(min)); renderHistory(); }).catch(function(er){ toast(errText(er)); });
+      });
+      return;
+    }
     var b = ev.target.closest(".del"); if (!b) return;
     if (!b.classList.contains("confirm")){
       $$(".del.confirm").forEach(function(x){ x.classList.remove("confirm"); x.textContent = "Training löschen"; });
