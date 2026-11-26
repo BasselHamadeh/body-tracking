@@ -1195,6 +1195,12 @@ body:not(.tm) #exlist .ex.done .ex-head{opacity:1}
 .verl li{display:grid;grid-template-columns:44px 1fr;gap:8px;padding:6px 0;border-top:1px solid var(--line);font-size:14px}
 .verl li:first-child{border-top:0}
 .verl b{color:var(--blue)}
+.tmstart{margin:12px 0 26px !important}
+.exh{font-family:var(--cond);font-weight:700;font-size:20px;margin:24px 2px 10px}
+body:not(.tm) .list{margin-top:0 !important}
+.tmany{all:unset;box-sizing:border-box;display:block;width:100%;text-align:center;padding:15px;margin:14px 0 6px;border:1.5px dashed var(--line);border-radius:16px;color:var(--ink);font-weight:600;cursor:pointer}
+.tmany:focus-visible{outline:3px solid var(--blue)}
+.tmany[hidden],body.tm .tmany,body.tm .exh{display:none !important}
 </style>
 </head>
 <body>
@@ -1243,7 +1249,9 @@ body:not(.tm) #exlist .ex.done .ex-head{opacity:1}
     <div class="kcard focus" id="focusCard" hidden><div class="khead"><h2 id="focusT">Heute im Fokus</h2><span class="fm" id="focusM"></span></div><div class="focus-in"><div class="focus-fig" id="focusFig"></div><div class="focus-tx" id="focusTx"></div></div></div>
     <button type="button" class="tmtest" id="tmTest" hidden>Testtraining (zählt nicht)</button>
     <button type="button" class="showex" id="showEx" hidden>Übungen anzeigen</button>
+    <button type="button" class="tmany" id="tmAny" hidden>Heute trotzdem trainieren</button>
     <div id="exWrap">
+    <h3 class="exh" id="exHead"></h3>
     <ol class="list" id="exlist"></ol>
     <div class="tnote">
       <label class="lbl" for="noteText">Notiz</label>
@@ -1983,9 +1991,10 @@ body:not(.tm) #exlist .ex.done .ex-head{opacity:1}
     $("#cDone").textContent = done; $("#cAll").textContent = "/" + PLAN.length;
     $("#ringFg").style.strokeDashoffset = (163.36 * (1 - done / PLAN.length)).toFixed(1);
     $(".ring").hidden = !isTrain; $("#segbar").hidden = !isTrain; $(".legend").hidden = !isTrain; $("#ttrack").hidden = !isTrain; var sb0 = $("#tmStart"); if (sb0){ var tt0 = trState(); sb0.hidden = !isTrain || !!(tt0 && tt0.e && (Date.parse(tt0.e) - Date.parse(tt0.s)) >= 300000); } var tb0 = $("#tmTest"); if (tb0) tb0.hidden = isTrain; renderTrack(); autoStop();
-    var exWrap = $("#exWrap"), showBtn = $("#showEx");
-    if (isTrain){ exWrap.hidden = false; showBtn.hidden = true; }
-    else { showBtn.hidden = false; exWrap.hidden = !exShown; showBtn.textContent = exShown ? "Übungen ausblenden" : "Übungen anzeigen"; }
+    var exWrap = $("#exWrap"), showBtn = $("#showEx"), tt1 = trState(), finished = !!(tt1 && tt1.e && (Date.parse(tt1.e) - Date.parse(tt1.s)) >= 300000);
+    exWrap.hidden = false; showBtn.hidden = true;
+    $("#tmAny").hidden = isTrain || finished;
+    $("#exHead").textContent = isTrain ? "Heute · " + planName() + " · " + STRENGTH.length + " Übungen" : (sub ? sub + " · " : "") + planName();
     renderSleep(); renderScores(); renderFocus();
   }
 
@@ -3045,8 +3054,9 @@ body:not(.tm) #exlist .ex.done .ex-head{opacity:1}
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "1.6", APP_BUILT = "2026-11-26T20:25:16Z";
+  var APP_VERSION = "1.7", APP_BUILT = "2026-11-26T20:28:21Z";
   var CHANGES = [
+    ["1.7", "Ruhetag: Übungen sichtbar, trotzdem trainieren möglich"],
     ["1.6", "Versionsanzeige im Verlauf"],
     ["1.5", "Übungsvorschau ohne Bearbeiten, Testtrainings entfernt"],
     ["1.4", "Abschluss mit Muskelbild und Trainingswerten"],
@@ -3502,6 +3512,7 @@ body:not(.tm) #exlist .ex.done .ex-head{opacity:1}
     tmGo(first);
   });
   $("#tmStart").addEventListener("click", tmStart);
+  $("#tmAny").addEventListener("click", tmStart);
   $("#tmExit").addEventListener("click", tmStop);
   $("#tmPrev").addEventListener("click", function(){ tmGo(tmIdx() - 1); });
   $("#tmNext").addEventListener("click", function(){ if (tmIdx() >= PLAN.length - 1) finishTraining(true); else tmGo(tmIdx() + 1); });
