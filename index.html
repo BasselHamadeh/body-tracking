@@ -1168,6 +1168,25 @@ body.tm .bodyrow .body{max-height:124px !important}
 .nx .nx-tx b,.nx .nx-tx b::before{color:var(--on-accent) !important}
 .clipb{width:100%;min-height:46px;margin-top:10px;border-radius:14px}
 .clipb[hidden]{display:none}
+
+/* ---------- Abschluss ---------- */
+.tmdone .box{max-width:400px !important;width:100%;gap:12px !important;padding:22px 18px 18px !important}
+.tmdone .box>b#tmDoneT{font-family:var(--cond);font-size:30px !important}
+.tdstats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.tdstats div{background:var(--bg);border-radius:12px;padding:8px 4px;display:grid;gap:1px}
+.tdstats b{font-family:var(--cond);font-weight:700;font-size:22px !important;line-height:1.1}
+.tdstats span{font-size:11.5px;color:var(--muted)}
+.tdfw{position:relative;background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--red) 16%,transparent),transparent 70%);border-radius:16px;padding:6px 0 18px}
+.tdfig .fullb{max-height:300px !important}
+.tdv{position:absolute;bottom:2px;font-size:11.5px;color:var(--muted);font-weight:600}
+.tdv.l{left:25%;transform:translateX(-50%)}.tdv.r{left:75%;transform:translateX(-50%)}
+.tdm{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;margin-top:8px}
+.tdm span{font-size:12.5px;font-weight:600;padding:4px 9px;border-radius:999px}
+.tdm .p{background:color-mix(in srgb,var(--red) 16%,transparent);color:var(--red)}
+.tdm .s{background:var(--bg);color:var(--muted)}
+.tdn{font-size:13px;color:var(--muted);margin:6px 0 0}
+body.tm .view[data-name="training"]{padding-top:calc(env(safe-area-inset-top,0px) + 92px) !important}
+body.tm .ex-head{padding-top:8px !important}
 </style>
 </head>
 <body>
@@ -1412,7 +1431,7 @@ body.tm .bodyrow .body{max-height:124px !important}
 <p class="sr" id="live" aria-live="polite"></p>
 
 <div class="tmbar" id="tmBar" hidden><button type="button" id="tmExit">Beenden</button><button type="button" id="tmPrev" aria-label="Zurück">‹</button><span class="tmc"><b id="tmN">1/11</b><small id="tmTime">0:00</small></span><button type="button" class="tmn" id="tmNext">Weiter ›</button></div>
-<div class="tmdone" id="tmDone" hidden><div class="box"><b id="tmDoneT">Training geschafft 💪</b><div class="tdfig" id="tmDoneFig"></div><p id="tmDoneP"></p><ul class="tdl" id="tmDoneL"></ul><button type="button" id="tmDoneOk">Fertig</button></div></div>
+<div class="tmdone" id="tmDone" hidden><div class="box"><b id="tmDoneT">Training geschafft 💪</b><div class="tdstats" id="tmDoneS"></div><div class="tdfig" id="tmDoneFig"></div><p id="tmDoneP" hidden></p><ul class="tdl" id="tmDoneL"></ul><button type="button" id="tmDoneOk">Fertig</button></div></div>
 <div class="ratedlg" id="rateDlg" hidden><div class="rdbox"><div class="rdt">Wie war der Satz?</div><div class="rds" id="rdSub"></div><div class="rdgrid">
 <button type="button" data-r="leicht"><b>🙂</b><small>Leicht</small></button><button type="button" data-r="passt"><b>💪</b><small>Genau richtig</small></button><button type="button" data-r="hart"><b>😤</b><small>Schwer</small></button>
 <button type="button" data-r="vhart"><b>🥵</b><small>Sehr schwer</small></button><button type="button" data-r="limit"><b>🔥</b><small>Am Limit</small></button><button type="button" data-r="fail"><b>💀</b><small>Über dem Limit</small></button>
@@ -3422,9 +3441,10 @@ body.tm .bodyrow .body{max-height:124px !important}
     var allDone = PLAN.every(function(ex){ return exDoneEntry(ex, todayEntry(ex.id)); });
     $("#tmDoneT").textContent = allDone ? "Training fertig 💪" : "Training beendet";
     var hit = musclesOf(rws.map(function(r){ return r.ex.id; }));
-    $("#tmDoneFig").innerHTML = allDone && hit.p.length ? fullBody(hit) + '<p class="fbl"><b>' + hit.p.map(function(k){ return MNAMES[k]; }).filter(function(v, i, a){ return a.indexOf(v) === i; }).join(", ") + '</b></p>' : "";
+    $("#tmDoneFig").innerHTML = '<div class="tdfw">' + fullBody(hit) + '<span class="tdv l">Vorne</span><span class="tdv r">Hinten</span></div>' +
+      (hit.p.length ? '<div class="tdm">' + uniqNames(hit.p).map(function(n){ return '<span class="p">' + n + '</span>'; }).join("") + uniqNames(hit.s).filter(function(n){ return uniqNames(hit.p).indexOf(n) < 0; }).map(function(n){ return '<span class="s">' + n + '</span>'; }).join("") + '</div>' : '<p class="tdn">Noch kein Satz abgehakt.</p>');
     $("#tmDoneL").innerHTML = rws.map(function(r){ return '<li><div><b>' + r.ex.name + '</b><span class="vnext ' + r.nt.cls + '">Nächstes Mal: <b>' + r.nt.tx + '</b></span></div><span class="vt ' + r.tr.cls + '">' + r.tr.tx + '</span></li>'; }).join("");
-    $("#tmDoneP").textContent = [min ? min + " min" : null, n + " von " + PLAN.length + " Übungen", sets + " Sätze", Math.round(vol).toLocaleString("de-DE") + " kg bewegt"].filter(Boolean).join(" · ") + ". Jetzt Eiweiß essen, Wasser trinken und gut schlafen.";
+    $("#tmDoneS").innerHTML = [[min || 0, "Minuten"], [n + "/" + PLAN.length, "Übungen"], [sets, "Sätze"], [Math.round(vol).toLocaleString("de-DE"), "kg bewegt"]].map(function(x){ return '<div><b>' + x[0] + '</b><span>' + x[1] + '</span></div>'; }).join("");
     $("#tmDone").hidden = false;
   }
   $("#tmDoneOk").addEventListener("click", function(){ $("#tmDone").hidden = true; tmStop(); });
