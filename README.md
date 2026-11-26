@@ -2,6 +2,18 @@
 
 Training, Essen, Körper und Verlauf in einer App. Statische Seite (`index.html`), Daten in Supabase.
 
+## Aufbau
+
+```
+index.html          Seitengerüst (Tabs, Karten, Dialoge)
+css/app.css         Aussehen
+js/app.js           App-Logik (Training, Essen, Körper, Verlauf, Datenbank)
+config.js           Supabase-Zugang
+supabase/schema.sql Tabelle + Zugriffsregeln
+vercel.json         Sicherheits-Header
+manifest.webmanifest, *.png   App-Icon für den Home-Bildschirm
+```
+
 ## Einrichten
 
 1. **Supabase**: Projekt anlegen → *SQL Editor* → Inhalt von `supabase/schema.sql` ausführen.
