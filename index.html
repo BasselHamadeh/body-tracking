@@ -1322,6 +1322,9 @@ body.tm #exWrap{display:block !important}
 #lastTr .vchips span{display:grid;justify-items:center;text-align:center;padding:9px 4px;white-space:normal}
 #lastTr .vchips b{font-size:22px}
 #lastTr .vchips em{display:block;font-size:11.5px;margin:2px 0 0}
+body:not(.tm) #exlist .ex .ex-name{color:var(--ink)}
+body:not(.tm) #exlist .ex.done{opacity:.45}
+body:not(.tm) #exlist .ex.done .ex-state{display:block !important}
 </style>
 </head>
 <body>
@@ -1975,7 +1978,7 @@ body.tm #exWrap{display:block !important}
     var c = $("#focusCard"); if (!c) return;
     var isTrain = TRAIN_DAYS.indexOf(new Date().getDay()) >= 0, sub = $("#tmSub");
     if (sub) sub.textContent = planName() + " · " + STRENGTH.length + " Übungen · ca. " + estMin() + " min";
-    if (isTrain){ c.hidden = true; return; }
+    c.hidden = true; return;
     if (false){
       var m = musclesOf(PLAN.map(function(e){ return e.id; }));
       $("#focusT").textContent = "Heute im Fokus"; $("#focusM").textContent = planName();
@@ -3366,8 +3369,9 @@ body.tm #exWrap{display:block !important}
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "2.6", APP_BUILT = "2026-11-26T21:40:05Z";
+  var APP_VERSION = "2.7", APP_BUILT = "2026-11-26T21:42:30Z";
   var CHANGES = [
+    ["2.7", "Erledigte Übungen ausgegraut, Erholungs-Karte entfernt"],
     ["2.6", "Ruhetag ohne Tipps"],
     ["2.5", "Verlauf aufgeräumt, Ruhetag ohne Übungsliste"],
     ["2.4", "Bewertung pro Satz sichtbar und änderbar, Training nachträglich bewerten, Dauer im Verlauf ändern"],
