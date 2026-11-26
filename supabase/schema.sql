@@ -14,3 +14,6 @@ create policy "docs_select_own" on public.docs for select using (auth.uid() = us
 create policy "docs_insert_own" on public.docs for insert with check (auth.uid() = user_id);
 create policy "docs_update_own" on public.docs for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "docs_delete_own" on public.docs for delete using (auth.uid() = user_id);
+
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on public.docs to authenticated;

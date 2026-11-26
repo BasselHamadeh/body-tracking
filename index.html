@@ -3154,7 +3154,7 @@ body.tm .bodyrow .body{max-height:124px !important}
       if (err && (err.code === "unavailable" || err.code === "deadline-exceeded" || err.code === "aborted")){ setTimeout(subscribeTraining, 3000); return; }
       firstSync.tr = true; updateSyncBanner();
       if (err && err.code === "revoked"){ mode = "readonly"; setBanner("Speichern ist gerade nicht möglich."); renderTraining(); return; }
-      setBanner("Verlauf konnte nicht geladen werden.");
+      setBanner("Verlauf konnte nicht geladen werden." + (err && err.message ? " (" + err.message + ")" : ""));
     });
   }
   function subscribeFood(){
