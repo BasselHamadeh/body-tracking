@@ -1227,6 +1227,59 @@ body:not(.tm) .list{margin-top:0 !important}
 .tdok{position:sticky;bottom:-18px;margin:0 0 -18px;padding:10px 0 18px;background:var(--surface);box-shadow:0 -12px 16px -4px var(--surface)}
 .tdn{line-height:1.4}
 .fchips .favadd{max-width:200px !important}
+
+/* ---------- Heute gegessen ---------- */
+.fday{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.fgh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:9px 14px 7px;background:color-mix(in srgb,var(--bg) 60%,var(--surface));border-top:1px solid var(--line)}
+.fday>.fgh:first-child{border-top:0}
+.fgh b{font-size:13px;font-weight:700;color:var(--ink)}
+.fgh span{font-size:12.5px;color:var(--muted)}
+.ftl2{list-style:none;margin:0;padding:0}
+.fr{border-top:1px solid var(--line)}
+.fgh+.ftl2>.fr:first-child,.fday>.ftl2:first-child>.fr:first-child{border-top:0}
+.frm{all:unset;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;padding:11px 14px;cursor:pointer}
+.frm:focus-visible{outline:3px solid var(--blue);outline-offset:-3px}
+.fr.open .frm{background:color-mix(in srgb,var(--blue) 8%,transparent)}
+.frm .fi{min-width:0}
+.frm .fi b{display:block;font-size:15.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.frm .fi small{display:block;font-size:12.5px;color:var(--muted);margin-top:1px}
+.frm .fv{text-align:right;line-height:1.05}
+.frm .fv b{display:block;font-family:var(--cond);font-weight:700;font-size:20px}
+.frm .fv span{font-size:11.5px;color:var(--muted)}
+.fact{display:flex;flex-wrap:wrap;gap:6px;padding:2px 14px 12px;background:color-mix(in srgb,var(--blue) 8%,transparent)}
+.fact[hidden]{display:none}
+.famt{flex-basis:100%;margin:0 0 4px;font-size:12.5px;color:var(--muted)}
+.fact button{all:unset;cursor:pointer;box-sizing:border-box;flex:1;min-height:40px;padding:0 8px;border-radius:10px;text-align:center;font-weight:600;font-size:13.5px;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:grid;place-items:center;white-space:nowrap}
+.fact .add{background:var(--blue);border-color:transparent;color:var(--on-accent)}
+.fact .rm{color:var(--red)}
+.fact button:focus-visible{outline:3px solid var(--blue)}
+.fmore{all:unset;box-sizing:border-box;cursor:pointer;display:block;width:100%;text-align:center;margin-top:8px;padding:11px;border-radius:14px;font-weight:600;font-size:14px;color:var(--blue);background:color-mix(in srgb,var(--blue) 10%,transparent)}
+.fmore[hidden]{display:none}
+.fmore:focus-visible{outline:3px solid var(--blue)}
+.fempty{background:var(--surface);border:1px dashed var(--line);border-radius:16px;padding:14px !important;font-size:14px;text-align:center;margin:0}
+/* ---------- Schnell hinzufügen ---------- */
+.fsearch{display:block;width:100%;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--field);color:var(--ink);padding:0 12px;font-size:16px;margin:0 0 8px;box-sizing:border-box}
+.fsearch[hidden]{display:none}
+.fsearch:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 22%,transparent)}
+.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.fcell{position:relative;min-width:0}
+.ftile{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:grid;align-content:center;gap:3px;width:100%;height:100%;min-height:66px;padding:10px 44px 10px 12px;border-radius:14px;background:var(--surface);border:1px solid var(--line);transition:transform .12s,border-color .2s;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.ftile b{font-size:14.5px;font-weight:600;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.ftile span{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ftile:active{transform:scale(.97)}
+.ftile.hit{border-color:var(--green)}
+.ftile:focus-visible{outline:3px solid var(--blue)}
+.ftile .fplus{right:10px}
+.fgrid.edit .fplus{display:none}
+.fgrid.edit .ftile{cursor:default;opacity:.85}
+.fgrid .favdel{all:unset;cursor:pointer;position:absolute;top:-7px;right:-5px;width:28px;height:28px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;font-size:17px;font-weight:700;line-height:1;z-index:1}
+.fgrid .fempty{grid-column:1/-1}
+/* ---------- Verlauf: Heute ---------- */
+.tline{margin:10px 0 0;font-size:14px;color:var(--muted)}
+.vstats .st.w .bar i{background:var(--blue)}
+.vstats .st .bar i.full{background:var(--green)}
+.bcol.today .bar{opacity:.55;outline:1.5px dashed var(--blue);outline-offset:1px}
+.bcol.today .bcl{color:var(--blue);font-weight:700}
 </style>
 </head>
 <body>
@@ -1302,6 +1355,11 @@ body:not(.tm) .list{margin-top:0 !important}
   </section>
 
   <section class="view" data-name="verlauf" hidden>
+    <div class="kcard" id="todayCard">
+      <div class="khead"><h2>Heute</h2><span class="fm" id="tdMeta2"></span></div>
+      <div class="vstats" id="todayStats"></div>
+      <p class="tline" id="todayLine"></p>
+    </div>
     <div class="kcard">
       <div class="khead"><h2>Letzte 7 Tage</h2><span class="fm" id="wkMeta"></span></div>
       <div class="vstats">
@@ -1312,7 +1370,7 @@ body:not(.tm) .list{margin-top:0 !important}
       </div>
       <p class="wksum yest" id="wkYest"></p>
       <p class="wksum" id="wkSum"></p>
-      <p class="chl">Eiweiß pro Tag · Linie = 150 g</p>
+      <p class="chl">Ø ohne heute · Eiweiß pro Tag, Linie 150 g</p>
       <div class="chart"><div class="goal" id="wkGoal"></div><div class="bars" id="wkChart"></div></div>
     </div>
 
@@ -1409,12 +1467,15 @@ body:not(.tm) .list{margin-top:0 !important}
 
     <div class="fblock">
       <div class="fhead"><h2>Schnell hinzufügen</h2><button type="button" class="linkbtn" id="favEdit" hidden>Bearbeiten</button></div>
-      <div id="favList" class="fchips"></div>
+      <input type="search" class="fsearch" id="favQ" placeholder="Gemerkte durchsuchen …" aria-label="Gemerkte Einträge durchsuchen" autocomplete="off" hidden>
+      <div id="favList" class="fgrid"></div>
+      <button type="button" class="fmore" id="favMore" hidden></button>
     </div>
 
     <div class="fblock">
       <div class="fhead"><h2>Heute gegessen</h2><span class="fm" id="todayMeta"></span></div>
       <div id="foodToday"></div>
+      <button type="button" class="fmore" id="todayMore" hidden></button>
     </div>
   </section>
 
@@ -2337,6 +2398,7 @@ body:not(.tm) .list{margin-top:0 !important}
       if (!name || k === null || p === null || k < 0 || k > 5000 || p < 0 || p > 400) return null;
       var out = {id: typeof it.id === "string" ? it.id.slice(0, 24) : uid6(), name:name, amount:amount, kcal:Math.round(k), protein:Math.round(p)};
       if (typeof it.g === "string" && it.g) out.g = it.g.slice(0, 24);
+      if (typeof it.at === "string" && !isNaN(Date.parse(it.at))) out.at = it.at.slice(0, 30);
       if (typeof it.gt === "string" && it.gt.trim()) out.gt = it.gt.trim().slice(0, 80);
       var ml = clean(it.ml); if (ml !== null && ml > 0 && ml <= 5000) out.ml = Math.round(ml);
       var cnt = clean(it.count !== undefined ? it.count : it.n); if (cnt !== null && cnt >= 1 && cnt <= 50) out.n = Math.round(cnt);
@@ -2437,33 +2499,63 @@ body:not(.tm) .list{margin-top:0 !important}
     renderScores();
 
     var box = $("#foodToday"); box.innerHTML = "";
-    var map = {}, groups = [];
-    items.forEach(function(it){
-      var k = normKey(it.name);
-      if (!map[k]){ map[k] = {name:it.name.replace(/\s*\([^)]*\)\s*/g, " ").trim() || it.name, n:0, kcal:0, prot:0, amts:[], last:null}; groups.push(map[k]); }
-      var g = map[k]; g.n += it.n || 1; g.kcal += it.kcal; g.prot += it.protein; g.last = it.id;
-      if (it.amount && g.amts.indexOf(it.amount) < 0) g.amts.push(it.amount);
+    $("#todayMeta").textContent = items.length ? items.length + (items.length === 1 ? " Eintrag · " : " Einträge · ") + s.k.toLocaleString("de-DE") + " kcal" : "";
+    var more = $("#todayMore");
+    if (!items.length){ var e = document.createElement("p"); e.className = "empty fempty"; e.textContent = "Noch nichts eingetragen. Füg oben etwas ein oder tippe auf einen gemerkten Eintrag."; box.appendChild(e); more.hidden = true; return; }
+    // Nach Tageszeit gruppieren, gleiche Gerichte zusammenfassen, Neuestes zuerst
+    var MEALS2 = [["Frühstück", 0, 10.5], ["Mittag", 10.5, 14.5], ["Nachmittag", 14.5, 17.5], ["Abend", 17.5, 24.1]];
+    function mealOf(it){ if (!it.at) return -1; var d = new Date(it.at); if (isNaN(d)) return -1; var h = d.getHours() + d.getMinutes() / 60; for (var i = 0; i < MEALS2.length; i++) if (h >= MEALS2[i][1] && h < MEALS2[i][2]) return i; return -1; }
+    var gmap = {}, glist = [];
+    items.forEach(function(it, idx){
+      var mi = mealOf(it), gk = String(mi);
+      if (!gmap[gk]){ gmap[gk] = {mi:mi, rows:{}, order:[], kcal:0, prot:0}; glist.push(gmap[gk]); }
+      var G = gmap[gk], k = normKey(it.name);
+      if (!G.rows[k]){ G.rows[k] = {name:it.name.replace(/\s*\([^)]*\)\s*/g, " ").trim() || it.name, n:0, kcal:0, prot:0, last:null, lastIdx:-1, at:null, amts:[]}; G.order.push(k); }
+      var R = G.rows[k]; R.n += it.n || 1; R.kcal += it.kcal; R.prot += it.protein; R.last = it.id; R.lastIdx = idx; if (it.at) R.at = it.at;
+      if (it.amount && R.amts.indexOf(it.amount) < 0) R.amts.push(it.amount);
+      G.kcal += it.kcal; G.prot += it.protein;
     });
-    $("#todayMeta").textContent = items.length ? items.length + (items.length === 1 ? " Eintrag" : " Einträge") : "";
-    if (!groups.length){ var e = document.createElement("p"); e.className = "empty"; e.textContent = "Noch nichts eingetragen."; box.appendChild(e); return; }
-    var ul = document.createElement("ul"); ul.className = "ftl"; var edit = canEdit();
-    groups.slice().reverse().forEach(function(g){
-      var li = document.createElement("li");
-      var a = document.createElement("div"); a.className = "fi";
-      var nb = document.createElement("b"); nb.textContent = (g.n > 1 ? g.n + "× " : "") + g.name; a.appendChild(nb);
-      if (g.amts.length){ var sm = document.createElement("small"); sm.textContent = g.amts.map(function(t){ return fixAmt(t, g.name); }).join(" · "); a.appendChild(sm); }
-      var v = document.createElement("div"); v.className = "fv";
-      var vk = document.createElement("b"); vk.textContent = g.kcal.toLocaleString("de-DE"); var vs = document.createElement("span"); vs.textContent = "kcal · " + g.prot + " g";
-      v.appendChild(vk); v.appendChild(vs);
-      li.appendChild(a); li.appendChild(v);
-      if (edit){
-        var ad = document.createElement("button"); ad.type = "button"; ad.className = "add"; ad.dataset.add = g.last; ad.textContent = "+1"; ad.setAttribute("aria-label", g.name + " nochmal hinzufügen");
-        var rm = rmBtn((g.n > 1 ? "Ein " : "") + g.name + " entfernen", "key", g.last);
-        li.appendChild(ad); li.appendChild(rm);
+    glist.sort(function(a, b){ return b.mi - a.mi; });
+    var LIMIT = 6, shown = 0, total = 0, edit = canEdit(), multi = glist.length > 1 || glist[0].mi >= 0;
+    glist.forEach(function(G){ total += G.order.length; });
+    var card = document.createElement("div"); card.className = "fday";
+    glist.forEach(function(G){
+      var rows = G.order.map(function(k){ return G.rows[k]; }).sort(function(a, b){ return b.lastIdx - a.lastIdx; });
+      if (!foodAll && shown >= LIMIT) return;
+      if (multi){
+        var hd = document.createElement("div"); hd.className = "fgh";
+        var hn = document.createElement("b"); hn.textContent = G.mi >= 0 ? MEALS2[G.mi][0] : "Ohne Uhrzeit";
+        var hv = document.createElement("span"); hv.textContent = G.kcal.toLocaleString("de-DE") + " kcal · " + G.prot + " g";
+        hd.appendChild(hn); hd.appendChild(hv); card.appendChild(hd);
       }
-      ul.appendChild(li);
+      var ul = document.createElement("ul"); ul.className = "ftl2";
+      rows.forEach(function(R){
+        if (!foodAll && shown >= LIMIT) return; shown++;
+        var li = document.createElement("li"); li.className = "fr" + (openFood === R.last ? " open" : "");
+        var btn = document.createElement("button"); btn.type = "button"; btn.className = "frm"; btn.dataset.row = R.last; btn.setAttribute("aria-expanded", String(openFood === R.last));
+        var a = document.createElement("span"); a.className = "fi";
+        var nb = document.createElement("b"); nb.textContent = (R.n > 1 ? R.n + "× " : "") + R.name; a.appendChild(nb);
+        var meta = [R.prot + " g Eiweiß"]; if (R.at){ var dt = new Date(R.at); if (!isNaN(dt)) meta.push(dt.toLocaleTimeString("de-DE", {hour:"2-digit", minute:"2-digit"})); }
+        var sm = document.createElement("small"); sm.textContent = meta.join(" · "); a.appendChild(sm);
+        var v = document.createElement("span"); v.className = "fv";
+        var vk = document.createElement("b"); vk.textContent = R.kcal.toLocaleString("de-DE"); var vs = document.createElement("span"); vs.textContent = "kcal";
+        v.appendChild(vk); v.appendChild(vs);
+        btn.appendChild(a); btn.appendChild(v); li.appendChild(btn);
+        if (edit){
+          var act = document.createElement("div"); act.className = "fact"; act.hidden = openFood !== R.last;
+          if (R.amts.length){ var am = document.createElement("p"); am.className = "famt"; am.textContent = R.amts.map(function(t){ return fixAmt(t, R.name); }).join(" · "); act.appendChild(am); }
+          var b1 = document.createElement("button"); b1.type = "button"; b1.className = "add"; b1.dataset.add = R.last; b1.textContent = "+1 nochmal";
+          var b2 = document.createElement("button"); b2.type = "button"; b2.className = "fav"; b2.dataset.fav = R.last; b2.textContent = "☆ Merken";
+          var b3 = document.createElement("button"); b3.type = "button"; b3.className = "rm"; b3.dataset.key = R.last; b3.textContent = R.n > 1 ? "Eins entfernen" : "Entfernen";
+          act.appendChild(b1); act.appendChild(b2); act.appendChild(b3); li.appendChild(act);
+        }
+        ul.appendChild(li);
+      });
+      card.appendChild(ul);
     });
-    box.appendChild(ul);
+    box.appendChild(card);
+    more.hidden = total <= LIMIT;
+    more.textContent = foodAll ? "Weniger anzeigen" : "Alle " + total + " anzeigen";
   }
 
   // ---------- Einfügen (z. B. Antwort von ChatGPT) ----------
@@ -2536,7 +2628,7 @@ body:not(.tm) .list{margin-top:0 !important}
   })();
   $("#pAdd").addEventListener("click", function(){
     if (!pasted.length) return;
-    var items = cleanItems(pasted.map(function(x){ return {name:x.name, amount:"", kcal:x.kcal, protein:x.protein, fat:x.fat, sugar:x.sugar}; }));
+    var nowIso = new Date().toISOString(), items = cleanItems(pasted.map(function(x){ return {name:x.name, amount:"", kcal:x.kcal, protein:x.protein, fat:x.fat, sugar:x.sugar, at:nowIso}; }));
     if (!items.length){ toast("Die Werte passen nicht."); return; }
     var btn = this; btn.disabled = true;
     saveFood(todayFood().concat(items)).then(function(){ $("#mPaste").value = ""; renderPaste(); toast(items.length > 1 ? items.length + " Einträge hinzugefügt" : items[0].name + " hinzugefügt"); renderFood(); })
@@ -2547,7 +2639,7 @@ body:not(.tm) .list{margin-top:0 !important}
     var nf = {id:uid6(), name:String(x.name).slice(0, 60), kcal:Math.round(x.kcal), protein:Math.round(x.protein || 0)};
     if (x.sugar !== undefined && x.sugar !== null) nf.sugar = Math.round(x.sugar); if (x.fat !== undefined && x.fat !== null) nf.fat = Math.round(x.fat);
     var i0 = -1; favs.forEach(function(f, i){ if (f.name.toLowerCase() === nf.name.toLowerCase()) i0 = i; });
-    if (i0 >= 0) favs[i0] = nf; else favs.push(nf);
+    if (i0 >= 0){ nf.id = favs[i0].id; if (favs[i0].u) nf.u = favs[i0].u; favs[i0] = nf; } else favs.push(nf);
   }
 
   // ---------- Reiter ----------
@@ -2656,7 +2748,7 @@ body:not(.tm) .list{margin-top:0 !important}
     if (!(pending && pending.length) && !(pendingWater > 0)) return;
     var btn = this; btn.disabled = true;
     var g = uid6(), title = pendingTitle, ml = pendingWater;
-    var add = (pending || []).map(function(it){ var o = {}; for (var k in it) o[k] = it[k]; o.g = g; o.gt = title; return o; });
+    var add = (pending || []).map(function(it){ var o = {}; for (var k in it) o[k] = it[k]; o.g = g; o.gt = title; o.at = new Date().toISOString(); return o; });
     var p1 = add.length ? saveFood(todayFood().concat(add)) : Promise.resolve();
     p1.then(function(){ return ml > 0 ? addWater(ml) : null; }).then(function(){
       pending = null; pendingWater = 0; renderPreview(); $("#foodText").value = ""; setPhoto(null);
@@ -2668,35 +2760,54 @@ body:not(.tm) .list{margin-top:0 !important}
   function cleanFavs(arr){ var out = []; (Array.isArray(arr) ? arr : []).forEach(function(f){ if (!f || typeof f.name !== "string") return; var k = Number(f.kcal), p = Number(f.protein); if (!isFinite(k) || !isFinite(p)) return; var o2 = {id:typeof f.id === "string" ? f.id.slice(0, 24) : uid6(), name:f.name.slice(0, 60), kcal:Math.round(k), protein:Math.round(p)};
       if (f.sugar !== undefined && f.sugar !== null && isFinite(Number(f.sugar))) o2.sugar = Math.round(Number(f.sugar));
       if (f.fat !== undefined && f.fat !== null && isFinite(Number(f.fat))) o2.fat = Math.round(Number(f.fat));
-      out.push(o2); }); return out.slice(0, 60); }
+      var u = Number(f.u); if (isFinite(u) && u > 0) o2.u = Math.min(99999, Math.round(u));
+      out.push(o2); }); return out.slice(0, 120); }
   try { favs = cleanFavs(JSON.parse(localStorage.getItem(FAVKEY) || "[]")); } catch (e) { favs = []; }
-  var favEditOn = false;
+  var favEditOn = false, favAll = false;
   function renderFavs(){
     var box = $("#favList"); if (!box) return; box.innerHTML = "";
-    var eb = $("#favEdit"); if (eb){ eb.hidden = !favs.length; if (!favs.length) favEditOn = false; eb.textContent = favEditOn ? "Fertig" : "Bearbeiten"; }
+    var eb = $("#favEdit"), q = $("#favQ"), more = $("#favMore");
+    if (eb){ eb.hidden = !favs.length; if (!favs.length) favEditOn = false; eb.textContent = favEditOn ? "Fertig" : "Bearbeiten"; }
     box.classList.toggle("edit", favEditOn);
-    if (!favs.length){ var em = document.createElement("p"); em.className = "empty"; em.textContent = "Tippe beim Eintragen auf ☆ Merken, dann steht es hier zum schnellen Hinzufügen."; box.appendChild(em); return; }
-    favs.forEach(function(f, i){
-      var row = document.createElement("div"); row.className = "fchip";
-      var b = document.createElement("button"); b.type = "button"; b.className = "favadd"; b.dataset.i = i;
-      var n = document.createElement("b"); n.textContent = f.name; var v = document.createElement("span"); v.textContent = f.kcal + " kcal · " + f.protein + " g";
-      b.appendChild(n); b.appendChild(v);
-      var pl = document.createElement("i"); pl.className = "fplus"; pl.setAttribute("aria-hidden", "true"); pl.textContent = "+"; b.appendChild(pl);
-      row.appendChild(b);
-      if (favEditOn){ var d = document.createElement("button"); d.type = "button"; d.className = "favdel"; d.dataset.i = i; d.textContent = "×"; d.setAttribute("aria-label", f.name + " entfernen"); row.appendChild(d); }
+    q.hidden = favs.length <= 6;
+    if (!favs.length){ var em = document.createElement("p"); em.className = "empty fempty"; em.textContent = "Tippe beim Eintragen auf ☆ Merken, dann steht es hier zum schnellen Hinzufügen."; box.appendChild(em); more.hidden = true; return; }
+    var term = q.hidden ? "" : q.value.trim().toLowerCase();
+    var list = favs.slice().sort(function(a, b){ return (b.u || 0) - (a.u || 0) || a.name.localeCompare(b.name, "de"); });
+    if (term) list = list.filter(function(f){ return f.name.toLowerCase().indexOf(term) >= 0; });
+    var LIMIT = 6, cut = !term && !favAll && !favEditOn && list.length > LIMIT;
+    (cut ? list.slice(0, LIMIT) : list).forEach(function(f){
+      var row = document.createElement("div"); row.className = "fcell";
+      var b = document.createElement("button"); b.type = "button"; b.className = "ftile"; b.dataset.id = f.id; b.setAttribute("aria-label", f.name + " hinzufügen");
+      var n = document.createElement("b"); n.textContent = f.name;
+      var v = document.createElement("span"); v.textContent = f.kcal + " kcal · " + f.protein + " g";
+      var pl = document.createElement("i"); pl.className = "fplus"; pl.setAttribute("aria-hidden", "true"); pl.textContent = "+";
+      b.appendChild(n); b.appendChild(v); b.appendChild(pl); row.appendChild(b);
+      if (favEditOn){ var d = document.createElement("button"); d.type = "button"; d.className = "favdel"; d.dataset.id = f.id; d.textContent = "×"; d.setAttribute("aria-label", f.name + " löschen"); row.appendChild(d); }
       box.appendChild(row);
     });
+    if (term && !list.length){ var nf = document.createElement("p"); nf.className = "empty fempty"; nf.textContent = "Nichts gefunden."; box.appendChild(nf); }
+    more.hidden = term || favEditOn || list.length <= LIMIT;
+    more.textContent = favAll ? "Weniger anzeigen" : "Alle " + list.length + " anzeigen";
   }
   $("#favEdit").addEventListener("click", function(){ favEditOn = !favEditOn; renderFavs(); });
+  $("#favMore").addEventListener("click", function(){ favAll = !favAll; renderFavs(); });
+  $("#favQ").addEventListener("input", renderFavs);
   function saveFavs(){
     try { localStorage.setItem(FAVKEY, JSON.stringify(favs)); } catch (e) {}
     ready.then(function(){ if (mode === "db" && favRef) enqueue(function(){ return withRetry(function(){ return favRef.set({items:favs}); }); }).catch(function(e){ toast(errText(e)); }); });
   }
   renderFavs();
   $("#favList").addEventListener("click", function(ev){
-    var del = ev.target.closest(".favdel"), add = ev.target.closest(".favadd");
-    if (del){ favs.splice(Number(del.dataset.i), 1); saveFavs(); renderFavs(); return; }
-    if (add){ var f = favs[Number(add.dataset.i)]; if (!f) return; var items = cleanItems([{name:f.name, amount:"", kcal:f.kcal, protein:f.protein}]); var items = cleanItems([{name:f.name, amount:"", kcal:f.kcal, protein:f.protein, sugar:f.sugar, fat:f.fat}]); saveFood(todayFood().concat(items)).then(function(){ var wm = /(\d+)\s*ml\s*wasser/i.exec(f.name); if (wm) addWater(Number(wm[1])); toast(f.name + " hinzugefügt"); renderFood(); }).catch(function(e){ toast(errText(e)); }); }
+    var del = ev.target.closest(".favdel"), add = ev.target.closest(".ftile");
+    function byId(id){ for (var i = 0; i < favs.length; i++) if (favs[i].id === id) return i; return -1; }
+    if (del){ var di = byId(del.dataset.id); if (di >= 0){ favs.splice(di, 1); saveFavs(); renderFavs(); } return; }
+    if (add){
+      var fi = byId(add.dataset.id); if (fi < 0) return; var f = favs[fi];
+      if (favEditOn) return;
+      var items = cleanItems([{name:f.name, amount:"", kcal:f.kcal, protein:f.protein, sugar:f.sugar, fat:f.fat, at:new Date().toISOString()}]);
+      add.classList.add("hit"); setTimeout(function(){ add.classList.remove("hit"); }, 350);
+      saveFood(todayFood().concat(items)).then(function(){ f.u = (f.u || 0) + 1; saveFavs(); var wm = /(\d+)\s*ml\s*wasser/i.exec(f.name); if (wm) addWater(Number(wm[1])); toast(f.name + " hinzugefügt"); renderFood(); renderFavs(); }).catch(function(e){ toast(errText(e)); });
+    }
   });
   $("#mFav").addEventListener("click", function(){
     var name = $("#mName").value.trim(), k = num($("#mK").value), p = num($("#mP").value);
@@ -2748,19 +2859,25 @@ body:not(.tm) .list{margin-top:0 !important}
   $("#mAdd").addEventListener("click", function(){
     var name = $("#mName").value.trim(), k = num($("#mK").value), p = num($("#mP").value);
     if (!name || k === null || p === null){ toast("Bitte Name, kcal und Eiweiß eintragen."); return; }
-    var items = cleanItems([{name:name, amount:"", kcal:k, protein:p, sugar:num($("#mS").value), fat:num($("#mF").value)}]);
+    var items = cleanItems([{name:name, amount:"", kcal:k, protein:p, sugar:num($("#mS").value), fat:num($("#mF").value), at:new Date().toISOString()}]);
     if (!items.length){ toast("Die Werte passen nicht."); return; }
     saveFood(todayFood().concat(items)).then(function(){ $("#mName").value = ""; $("#mK").value = ""; $("#mP").value = ""; $("#mS").value = ""; $("#mF").value = ""; toast("Hinzugefügt"); renderFood(); })
       .catch(function(e){ toast(errText(e)); });
   });
+  var openFood = null, foodAll = false;
+  $("#todayMore").addEventListener("click", function(){ foodAll = !foodAll; renderFood(); });
   $("#foodToday").addEventListener("click", function(ev){
+    var tg = ev.target.closest(".frm");
+    if (tg){ openFood = openFood === tg.dataset.row ? null : tg.dataset.row; renderFood(); return; }
+    var fv = ev.target.closest(".fav");
+    if (fv){ var it0 = todayFood().filter(function(x){ return x.id === fv.dataset.fav; })[0]; if (!it0) return; var per = it0.n > 1 ? it0.n : 1; addFav({name:it0.name.replace(/\s*\([^)]*\)\s*/g, " ").trim() || it0.name, kcal:it0.kcal / per, protein:it0.protein / per, fat:it0.fat !== undefined ? it0.fat / per : undefined, sugar:it0.sugar !== undefined ? it0.sugar / per : undefined}); saveFavs(); renderFavs(); toast("Gemerkt ☆"); return; }
     var ad = ev.target.closest(".add");
     if (ad){
       var cur0 = todayFood(), src = null;
       for (var j = cur0.length - 1; j >= 0; j--) if (cur0[j].id === ad.dataset.add){ src = cur0[j]; break; }
       if (!src) return;
       var cp = {}; for (var k in src) cp[k] = src[k];
-      cp.id = uid6(); delete cp.g; delete cp.gt;
+      cp.id = uid6(); delete cp.g; delete cp.gt; cp.at = new Date().toISOString();
       if (src.n > 1){ cp.kcal = Math.round(src.kcal / src.n); cp.protein = Math.round(src.protein / src.n); cp.n = 1; cp.amount = "1 Stück"; }
       saveFood(cur0.concat([cp])).then(function(){ toast("+1 " + src.name); renderFood(); }).catch(function(e){ toast(errText(e)); });
       return;
@@ -3010,6 +3127,15 @@ body:not(.tm) .list{margin-top:0 !important}
     var log = todayWaterLog(), lastAt = null; log.forEach(function(e){ if (e.at) lastAt = e.at; });
     $("#wLast").textContent = log.length ? log.length + "× getrunken" + (lastAt && !isNaN(Date.parse(lastAt)) ? ", zuletzt " + new Date(lastAt).toLocaleTimeString("de-DE", {hour:"2-digit", minute:"2-digit"}) : "") : "";
   }
+  function renderToday(t){
+    var box = $("#todayStats"); if (!box) return;
+    var wg = waterGoal(), tile = function(label, val, pc, cls){ return '<div class="st' + (cls ? " " + cls : "") + '"><span class="sl">' + label + '</span><b>' + val + '</b><i class="bar"><i class="' + (pc >= 100 ? "full" : "") + '" style="width:' + Math.min(100, Math.max(0, pc)).toFixed(0) + '%"></i></i></div>'; };
+    box.innerHTML = tile("Kalorien", t.kcal.toLocaleString("de-DE"), t.kcal / GOAL_KCAL * 100) + tile("Eiweiß", t.prot + " g", t.prot / GOAL_PROT * 100, "p") + tile("Wasser", liters(t.ml), t.ml / wg * 100, "w") + tile("Schlaf", t.sl ? hrs(t.sl.min) : "–", t.sl ? sleepScore(t.sl.min) * 10 : 0, "s");
+    var ts = todaySession(), done = PLAN.filter(function(ex){ return exDoneEntry(ex, todayEntry(ex.id)); }).length, any = ts && isRealSession(ts);
+    var line = t.isTrain || any ? (done >= PLAN.length ? "💪 Training komplett" : any ? "🏋️ Training: " + done + " von " + PLAN.length + " Übungen" : "🏋️ Training noch offen") : "😌 Ruhetag";
+    $("#todayLine").textContent = line + " · Tageswert bisher " + f1(t.score) + "/10";
+    $("#tdMeta2").textContent = dateOf(todayId()).toLocaleDateString("de-DE", {weekday:"long", day:"numeric", month:"long"});
+  }
   function renderScores(){
     var el = $("#dayScore"); if (!el) return;
     var late = new Date().getHours() >= 20, t = dayScore(todayId());
@@ -3045,17 +3171,18 @@ body:not(.tm) .list{margin-top:0 !important}
     $("#wkK").textContent = aK ? aK.toLocaleString("de-DE") : fallbk; $("#wkKb").style.width = Math.min(100, aK / GOAL_KCAL * 100) + "%";
     $("#wkP").textContent = aP ? aP + " g" : fallbk; $("#wkPb").style.width = Math.min(100, aP / GOAL_PROT * 100) + "%";
     $("#wkS").textContent = aS !== null ? f1(aS) + "/10" : fallbk; $("#wkSb").style.width = (aS !== null ? aS * 10 : 0) + "%";
-    var maxP = Math.max(160, Math.max.apply(null, rw.map(function(x){ return x.r.prot; })));
+    var maxP = Math.max(160, Math.max.apply(null, rs.map(function(x){ return x.r.prot; })));
     $("#wkGoal").style.bottom = "calc(20px + (100% - 20px) * " + (GOAL_PROT / maxP).toFixed(3) + ")";
     var ch = $("#wkChart"); ch.innerHTML = "";
-    rw.forEach(function(x){
-      var col = document.createElement("div"); col.className = "bcol";
+    rs.forEach(function(x){
+      var col = document.createElement("div"); col.className = "bcol" + (x.id === todayId() ? " today" : "");
       var bar = document.createElement("i"); bar.className = "bar" + (x.r.prot >= GOAL_PROT - 5 ? " ok" : "");
       bar.style.height = "max(3px, calc((100% - 20px) * " + (x.r.prot / maxP).toFixed(3) + "))"; bar.title = x.r.prot + " g Eiweiß";
-      var lb = document.createElement("span"); lb.className = "bcl" + (isTrainId(x.id) ? " tr" : ""); lb.textContent = dateOf(x.id).toLocaleDateString("de-DE", {weekday:"short"}).replace(".", "");
+      var lb = document.createElement("span"); lb.className = "bcl" + (isTrainId(x.id) ? " tr" : ""); lb.textContent = x.id === todayId() ? "Heute" : dateOf(x.id).toLocaleDateString("de-DE", {weekday:"short"}).replace(".", "");
       col.dataset.id = x.id; col.setAttribute("role", "button"); col.addEventListener("click", function(){ hlDay(x.id); });
       col.appendChild(bar); col.appendChild(lb); ch.appendChild(col);
     });
+    renderToday(t);
     var ul = $("#daysList"); ul.innerHTML = "";
     rs.slice().reverse().forEach(function(x){
       var r = x.r, early = x.id === todayId() && !late; if (early) return;
@@ -3119,8 +3246,9 @@ body:not(.tm) .list{margin-top:0 !important}
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "2.0", APP_BUILT = "2026-11-26T20:47:51Z";
+  var APP_VERSION = "2.1", APP_BUILT = "2026-11-26T21:02:42Z";
   var CHANGES = [
+    ["2.1", "Heute gegessen nach Tageszeit, kompakt mit Antippen für Aktionen. Schnell hinzufügen als Kacheln mit Suche. Verlauf zeigt heute."],
     ["2.0", "Offline-fähig: speichert ohne Netz und synchronisiert später. Sicherer (keine Fremd-Skripte, Sicherheits-Header). Detailliertere Muskelbilder. App-Icon."],
     ["1.7", "Ruhetag: Übungen sichtbar, trotzdem trainieren möglich"],
     ["1.6", "Versionsanzeige im Verlauf"],
