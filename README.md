@@ -16,3 +16,15 @@ Alte App: Verlauf → Daten sichern → „Sicherung kopieren“.
 Neue App: Verlauf → Daten sichern → einfügen → „Wiederherstellen“.
 
 Ohne Einträge in `config.js` speichert die App nur lokal im Browser.
+
+## Sicherheit
+
+- Daten liegen pro Nutzer getrennt (Row Level Security, `supabase/schema.sql`).
+- Keine externen Skripte, Zugriff auf Supabase direkt per `fetch`.
+- Sicherheits-Header (CSP usw.) in `vercel.json`.
+- Nach dem Anlegen deines Kontos in Supabase unter *Authentication → Sign In / Providers* „Allow new users to sign up“ ausschalten.
+
+## Offline
+
+Eingaben werden sofort auf dem Gerät gespeichert und automatisch hochgeladen, sobald wieder Netz da ist.
+Ändern zwei Geräte denselben Tag, werden die Änderungen zusammengeführt.

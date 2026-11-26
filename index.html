@@ -5,9 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Training</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <meta name="apple-mobile-web-app-title" content="Training">
 <meta name="theme-color" content="#1E242C">
-<script src="config.js" onerror="void 0"></script>
+<script src="config.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap">
@@ -1201,10 +1205,33 @@ body:not(.tm) .list{margin-top:0 !important}
 .tmany{all:unset;box-sizing:border-box;display:block;width:100%;text-align:center;padding:15px;margin:14px 0 6px;border:1.5px dashed var(--line);border-radius:16px;color:var(--ink);font-weight:600;cursor:pointer}
 .tmany:focus-visible{outline:3px solid var(--blue)}
 .tmany[hidden],body.tm .tmany,body.tm .exh{display:none !important}
+.body .fib{stroke:none !important;pointer-events:none}
+.body .ln2{fill:none;stroke:#9C6A6E;stroke-width:.7;vector-effect:non-scaling-stroke;stroke-linecap:round}
+
+/* ---------- Feinschliff 2.0 ---------- */
+.top{background:color-mix(in srgb,var(--bg) 84%,transparent);-webkit-backdrop-filter:saturate(1.5) blur(16px);backdrop-filter:saturate(1.5) blur(16px);border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+.tabs a{transition:background .2s,color .2s}
+.syncinfo{max-width:560px;margin:6px auto 0;text-align:center;font-size:12.5px;color:var(--muted)}
+.syncinfo.err{color:var(--red);font-weight:600}
+.syncinfo[hidden]{display:none}
+.lgo{width:72px;height:72px;border-radius:20px;background:linear-gradient(160deg,#2B3644,#181D24);display:grid;place-items:center;box-shadow:0 10px 30px rgba(0,0,0,.25);margin-bottom:4px}
+.lgo svg{width:50px;height:50px}
+.lgo rect{fill:#82A8EE}
+.lgo rect:nth-child(5){fill:#E9EDF1}
+.lbox{gap:12px !important}
+.lbox p{line-height:1.45}
+.lbox input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 25%,transparent)}
+.lbox .btn:disabled{opacity:.6}
+.kcard,.fsum,.fadd,.cardf,.headcard,.ftl{box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.num input:focus,.mgrid2 input:focus,.krow input:focus,.kslf input:focus,.fpane textarea:focus,.dta:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 22%,transparent)}
+.tdok{position:sticky;bottom:-18px;margin:0 0 -18px;padding:10px 0 18px;background:var(--surface);box-shadow:0 -12px 16px -4px var(--surface)}
+.tdn{line-height:1.4}
+.fchips .favadd{max-width:200px !important}
 </style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<g id="figDefs"></g>
 <linearGradient id="gSkin" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FBEFEA"/><stop offset="1" stop-color="#EFD8D0"/></linearGradient>
 <linearGradient id="gMu" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F2D7D1"/><stop offset="1" stop-color="#DDB3AB"/></linearGradient>
 <linearGradient id="gPrim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF5A5F"/><stop offset="1" stop-color="#B5122B"/></linearGradient>
@@ -1218,6 +1245,7 @@ body:not(.tm) .list{margin-top:0 !important}
     <a href="#verlauf" data-view="verlauf">Verlauf</a>
   </nav>
   <p class="syncbar" id="syncBar">Verbinde …</p>
+  <p class="syncinfo" id="syncInfo" role="status" aria-live="polite" hidden></p>
 </header>
 
 <main>
@@ -1441,14 +1469,17 @@ body:not(.tm) .list{margin-top:0 !important}
   </section>
 </main>
 
-<div class="login" id="login" hidden><div class="lbox"><b class="lt">Training</b><p>Melde dich an. Deine Daten liegen dann sicher in deiner eigenen Datenbank, auf allen Geräten gleich.</p>
-<input id="lgMail" type="email" autocomplete="email" placeholder="E-Mail" aria-label="E-Mail"><input id="lgPw" type="password" autocomplete="current-password" placeholder="Passwort" aria-label="Passwort">
-<button type="button" class="btn primary" id="lgIn">Anmelden</button><button type="button" class="btn ghost" id="lgUp">Konto erstellen</button><p class="fstatus" id="lgSt" role="status"></p></div></div>
+<div class="login" id="login" hidden><form class="lbox" id="lgForm" novalidate>
+<div class="lgo" aria-hidden="true"><svg viewBox="0 0 64 64"><rect x="6" y="24" width="8" height="16" rx="2.5"/><rect x="14" y="18" width="8" height="28" rx="3"/><rect x="42" y="18" width="8" height="28" rx="3"/><rect x="50" y="24" width="8" height="16" rx="2.5"/><rect x="22" y="29" width="20" height="6" rx="2"/></svg></div>
+<b class="lt">Training</b><p>Melde dich an. Deine Daten liegen sicher in deiner eigenen Datenbank und sind auf allen Geräten gleich.</p>
+<label class="sr" for="lgMail">E-Mail</label><input id="lgMail" name="username" type="email" inputmode="email" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="E-Mail">
+<label class="sr" for="lgPw">Passwort</label><input id="lgPw" name="password" type="password" autocomplete="current-password" placeholder="Passwort">
+<button type="submit" class="btn primary" id="lgIn">Anmelden</button><button type="button" class="btn ghost" id="lgUp">Konto erstellen</button><p class="fstatus" id="lgSt" role="status" aria-live="polite"></p></form></div>
 <div class="toast" id="toast" hidden role="status" aria-live="polite"></div>
 <p class="sr" id="live" aria-live="polite"></p>
 
 <div class="tmbar" id="tmBar" hidden><button type="button" id="tmExit">Beenden</button><button type="button" id="tmPrev" aria-label="Zurück">‹</button><span class="tmc"><b id="tmN">1/11</b><small id="tmTime">0:00</small></span><button type="button" class="tmn" id="tmNext">Weiter ›</button></div>
-<div class="tmdone" id="tmDone" hidden><div class="box"><b id="tmDoneT">Training geschafft 💪</b><div class="tdstats" id="tmDoneS"></div><div class="tdfig" id="tmDoneFig"></div><p id="tmDoneP" hidden></p><ul class="tdl" id="tmDoneL"></ul><button type="button" id="tmDoneOk">Fertig</button></div></div>
+<div class="tmdone" id="tmDone" hidden><div class="box"><b id="tmDoneT">Training geschafft 💪</b><div class="tdstats" id="tmDoneS"></div><div class="tdfig" id="tmDoneFig"></div><p id="tmDoneP" hidden></p><ul class="tdl" id="tmDoneL"></ul><div class="tdok"><button type="button" id="tmDoneOk">Fertig</button></div></div></div>
 <div class="ratedlg" id="rateDlg" hidden><div class="rdbox"><div class="rdt">Wie war der Satz?</div><div class="rds" id="rdSub"></div><div class="rdgrid">
 <button type="button" data-r="leicht"><b>🙂</b><small>Leicht</small></button><button type="button" data-r="passt"><b>💪</b><small>Genau richtig</small></button><button type="button" data-r="hart"><b>😤</b><small>Schwer</small></button>
 <button type="button" data-r="vhart"><b>🥵</b><small>Sehr schwer</small></button><button type="button" data-r="limit"><b>🔥</b><small>Am Limit</small></button><button type="button" data-r="fail"><b>💀</b><small>Über dem Limit</small></button>
@@ -1768,39 +1799,60 @@ body:not(.tm) .list{margin-top:0 !important}
     hamI: [["M",11,121],["C",12.5,128,12.5,140,10.5,148],["C",8,146,6.5,138,6.5,130],["C",6.5,125,8.5,121,11,121]],
     calfO: [["M",14.5,154],["C",18,160,18,171,14.5,180],["C",12.5,176,11.8,166,12.5,158],["C",13,156,13.7,154.5,14.5,154]],
     calfI: [["M",10,154],["C",11.8,158,12,168,10.5,182],["C",7,178,5.6,168,6.4,160],["C",7,157,8.4,155,10,154]],
-    sol: [["M",8,181],["C",10,183,13.5,183,15,180],["C",14.6,185.5,13.2,189,12,191],["C",10,190,8.6,186,8,181]]
+    sol: [["M",8,181],["C",10,183,13.5,183,15,180],["C",14.6,185.5,13.2,189,12,191],["C",10,190,8.6,186,8,181]],
+    pat: [["M",10.5,148.8],["C",12.3,148.8,13.1,150.8,12.9,152.6],["C",12.6,154.5,11.5,155.3,10.4,155.3],["C",9.2,155.3,8.3,154.4,8.1,152.6],["C",8,150.7,8.9,148.8,10.5,148.8]]
   };
   var LN = {
     add: [["M",1.5,112],["C",3.5,118,5,124,6,130]],
     ach: [["M",9,182],["C",9.3,188,9.5,194,9.6,198]],
     spine: [["M",0,28],["L",0,100]],
+    clav: [["M",1.4,30.4],["C",7,28.8,14,29.8,20.5,33.2]],
+    scm: [["M",4.4,20.4],["C",3.7,23.6,2.5,26.7,1.3,29.6]],
+    pop: [["M",7,151.5],["C",10,153,13,153,16,151.5]],
     alba: [["M",0,48],["L",0,100]]
   };
   function hpo(cmds, cx, side){ return hp(cmds, cx, side).replace(/ Z$/, ""); }
+  // Faserrichtung als Muster (Grad, für die rechte Körperhälfte; links gespiegelt)
+  var FIB = {};
+  function fibId(ang){
+    ang = Math.round(ang); if (ang === 0 || ang === -0) ang = 0;
+    var id = "fb" + (ang < 0 ? "m" : "p") + Math.abs(ang);
+    if (!FIB[id]){
+      var defs = document.getElementById("figDefs");
+      if (defs){
+        var NS = "http://www.w3.org/2000/svg", p = document.createElementNS(NS, "pattern"), l = document.createElementNS(NS, "line");
+        p.setAttribute("id", id); p.setAttribute("patternUnits", "userSpaceOnUse"); p.setAttribute("width", "1.5"); p.setAttribute("height", "1.5"); p.setAttribute("patternTransform", "rotate(" + ang + ")");
+        l.setAttribute("x1", "0.75"); l.setAttribute("y1", "-0.2"); l.setAttribute("x2", "0.75"); l.setAttribute("y2", "1.7"); l.setAttribute("stroke", "#3A0C12"); l.setAttribute("stroke-opacity", "0.2"); l.setAttribute("stroke-width", "0.34");
+        p.appendChild(l); defs.appendChild(p);
+      }
+      FIB[id] = 1;
+    }
+    return id;
+  }
   function figure(cx, back, on){
     var o = "";
     function cls(name){ return on.p.indexOf(name) >= 0 ? "m1" : on.s.indexOf(name) >= 0 ? "m2" : "mu"; }
     function both(f){ return f(-1) + f(1); }
-    function P(cmds, c){ return both(function(sd){ return '<path class="' + c + '" d="' + hp(cmds, cx, sd) + '"/>'; }); }
-    function Ln(cmds){ return both(function(sd){ return '<path class="ln" d="' + hpo(cmds, cx, sd) + '"/>'; }); }
+    function P(cmds, c, ang){ return both(function(sd){ var d = hp(cmds, cx, sd); return '<path class="' + c + '" d="' + d + '"/>' + (ang === undefined ? "" : '<path class="fib" fill="url(#' + fibId(ang * sd) + ')" d="' + d + '"/>'); }); }
+    function Ln(cmds, c){ return both(function(sd){ return '<path class="' + (c || "ln") + '" d="' + hpo(cmds, cx, sd) + '"/>'; }); }
     o += '<ellipse class="b" cx="' + cx + '" cy="13" rx="8.5" ry="10.5"/><g transform="matrix(1.22 0 0 1 ' + (-0.22 * cx).toFixed(2) + ' 0)"><rect class="b" x="' + (cx - 5) + '" y="20" width="10" height="8"/>';
     o += P(LEG, "b") + P(ARM, "b") + P(TORSO, "b");
     o += both(function(sd){ return '<path class="b" d="M' + (cx + sd * 26) + ',107 C' + (cx + sd * 25) + ',113 ' + (cx + sd * 27) + ',120 ' + (cx + sd * 29) + ',120 C' + (cx + sd * 32) + ',119 ' + (cx + sd * 32.5) + ',112 ' + (cx + sd * 31) + ',107 Z"/><path class="b" d="M' + (cx + sd * 6.5) + ',199 L' + (cx + sd * 12) + ',199 C' + (cx + sd * 14.5) + ',201 ' + (cx + sd * 15) + ',205 ' + (cx + sd * 12) + ',205 L' + (cx + sd * 6) + ',205 Z"/>'; });
     if (!back){
-      o += P(SH.trapF, cls("traps_u")) + P(SH.pecU, cls("chest_u")) + P(SH.pecL, cls("chest_l"));
-      o += P(SH.deltL, cls("delts_s")) + P(SH.deltA, cls("delts_f"));
-      o += P(SH.brach, cls("brach")) + P(SH.biceps, cls("biceps")) + P(SH.flex, cls("forearm_f")) + P(SH.brad, cls("brachiorad"));
+      o += Ln(LN.scm, "ln2") + P(SH.trapF, cls("traps_u"), -60) + P(SH.pecU, cls("chest_u"), -60) + P(SH.pecL, cls("chest_l"), 65) + Ln(LN.clav, "ln2");
+      o += P(SH.deltL, cls("delts_s"), 0) + P(SH.deltA, cls("delts_f"), 20);
+      o += P(SH.brach, cls("brach"), 0) + P(SH.biceps, cls("biceps"), 0) + P(SH.flex, cls("forearm_f"), -10) + P(SH.brad, cls("brachiorad"), 10);
       var ab = cls("abs");
       [62, 71.5, 81].forEach(function(y){ o += both(function(sd){ return '<rect class="' + ab + '" x="' + (sd > 0 ? cx + 1 : cx - 8) + '" y="' + y + '" width="7" height="8.5" rx="1.6"/>'; }); });
       o += both(function(sd){ return '<rect class="' + ab + '" x="' + (sd > 0 ? cx + 1.5 : cx - 7.5) + '" y="90.5" width="6" height="8" rx="1.6"/>'; });
-      o += P(SH.obl, cls("obl")) + P(SH.serr1, "mu") + P(SH.serr2, "mu");
-      o += P(SH.add, cls("adductors")) + P(SH.quadO, cls("quads")) + P(SH.quadM, cls("quads")) + P(SH.quadI, cls("quads")) + P(SH.shin, "mu") + P(SH.calfF, cls("calves"));
+      o += P(SH.obl, cls("obl"), 40) + P(SH.serr1, "mu") + P(SH.serr2, "mu");
+      o += P(SH.add, cls("adductors"), -25) + P(SH.quadO, cls("quads"), 15) + P(SH.quadM, cls("quads"), 0) + P(SH.quadI, cls("quads"), -40) + P(SH.pat, "mu") + P(SH.shin, "mu", 0) + P(SH.calfF, cls("calves"), 0);
     } else {
-      o += P(SH.trapU, cls("traps_u")) + P(SH.trapM, cls("traps_m")) + P(SH.infra, cls("delts_b") === "m1" ? "m2" : "mu");
-      o += P(SH.deltLB, cls("delts_s")) + P(SH.deltP, cls("delts_b")) + P(SH.lats, cls("lats")) + P(SH.erector, cls("lower_back")) + Ln(LN.spine);
-      o += P(SH.triL, cls("triceps")) + P(SH.triO, cls("triceps")) + P(SH.forearm, cls("forearm_e"));
-      o += P(SH.gmed, cls("glutes")) + P(SH.glute, cls("glutes")) + P(SH.hamO, cls("hams")) + P(SH.hamI, cls("hams"));
-      o += P(SH.calfO, cls("calves")) + P(SH.calfI, cls("calves")) + P(SH.sol, cls("calves")) + Ln(LN.ach);
+      o += P(SH.trapU, cls("traps_u"), -55) + P(SH.trapM, cls("traps_m"), 90) + P(SH.infra, cls("delts_b") === "m1" ? "m2" : "mu", 80);
+      o += P(SH.deltLB, cls("delts_s"), 0) + P(SH.deltP, cls("delts_b"), -20) + P(SH.lats, cls("lats"), 40) + P(SH.erector, cls("lower_back"), 0) + Ln(LN.spine);
+      o += P(SH.triL, cls("triceps"), 0) + P(SH.triO, cls("triceps"), 0) + P(SH.forearm, cls("forearm_e"), 10);
+      o += P(SH.gmed, cls("glutes"), -60) + P(SH.glute, cls("glutes"), -45) + P(SH.hamO, cls("hams"), 0) + P(SH.hamI, cls("hams"), 0) + Ln(LN.pop, "ln2");
+      o += P(SH.calfO, cls("calves"), 0) + P(SH.calfI, cls("calves"), 0) + P(SH.sol, cls("calves"), 0) + Ln(LN.ach);
     }
     return o + '</g>';
   }
@@ -2069,7 +2121,8 @@ body:not(.tm) .list{margin-top:0 !important}
     var ups = rows.filter(function(r){ return r.tr.cls === "up"; }).length;
     var h = '<div class="khead"><h2>' + (L.id === todayId() ? "Heutiges Training" : "Letztes Training") + '</h2><span class="fm">' + dateShort(L.id) + '</span></div>';
     h += '<div class="vchips">' + (st.min ? '<span><b>' + st.min + '</b> min</span>' : '') + '<span><b>' + st.ex + '</b> Übungen</span><span><b>' + st.sets + '</b> Sätze</span><span><b>' + Math.round(st.vol).toLocaleString("de-DE") + '</b> kg' + (vtr && vtr.cls !== "new" ? ' <em class="' + vtr.cls + '">' + vtr.tx + '</em>' : '') + '</span></div>';
-    h += '<p class="vsum">' + (ups ? '💪 Bei <b>' + ups + ' von ' + rows.length + '</b> Übungen stärker als letztes Mal.' : 'Diesmal keine Steigerung. Halte das Gewicht und hol dir mehr Wiederholungen.') + '</p>';
+    var allNew = rows.every(function(r){ return r.tr.cls === "new"; }), prs = rows.filter(function(r){ return r.tr.cls === "pr"; }).length;
+    h += '<p class="vsum">' + (allNew ? 'Erstes Training mit diesen Übungen. Ab dem nächsten Mal siehst du hier deine Steigerung.' : (ups + prs) ? '💪 Bei <b>' + (ups + prs) + ' von ' + rows.length + '</b> Übungen stärker als letztes Mal' + (prs ? ', davon <b>' + prs + ' Rekord' + (prs === 1 ? '' : 'e') + '</b> 🏆' : '') + '.' : 'Diesmal keine Steigerung. Halte das Gewicht und hol dir mehr Wiederholungen.') + '</p>';
     h += '<ul class="vex">' + rows.map(function(r){
       return '<li><div class="vn"><b>' + r.ex.name + '</b><span>' + repsLine(r.e) + '</span></div><span class="vt ' + r.tr.cls + '">' + r.tr.tx + '</span><div class="vnext ' + r.nt.cls + '">Nächstes Mal: <b>' + r.nt.tx + '</b></div></li>';
     }).join("") + '</ul>';
@@ -2107,7 +2160,7 @@ body:not(.tm) .list{margin-top:0 !important}
   }
   var purged = false;
   function purgeTests(){
-    if (purged || todayId() > "2026-11-27") return; purged = true;
+    if (purged || todayId() > "2026-11-27" || !firstSync.tr && mode === "db") return; purged = true;
     try { if (!localStorage.getItem("purge-1")){ ["fit-fin", "fit-done", "fit-draft", "fit-tm", "fit-open", "fit-timer"].forEach(function(k){ localStorage.removeItem(k); }); localStorage.setItem("purge-1", "1"); } } catch (e) {}
     var id = "2026-11-26", s0 = sessionById(id); if (!s0) return;
     var cut = Date.parse("2026-11-26T20:30:00Z"), ent = s0.entries || {}, keep = {}, changed = false;
@@ -2149,7 +2202,7 @@ body:not(.tm) .list{margin-top:0 !important}
       return enqueue(function(){
         var ref = col.doc(id);
         function run(){
-          var patch = {entries:{}}; patch.entries[exId] = entry;
+          var patch = {entries: mergedEntries(id, exId, entry)};
           if (known[id]){
             return ref.update(patch).catch(function(e){ if (e && e.code === "invalid_argument"){ delete known[id]; return run(); } throw e; });
           }
@@ -2163,11 +2216,23 @@ body:not(.tm) .list{margin-top:0 !important}
       });
     });
   }
+  var shadow = {};
+  function mergedEntries(id, exId, entry){
+    var s0 = sessionById(id), base = (s0 && s0.entries) || {}, sh = shadow[id] || (shadow[id] = {}), out = {};
+    sh[exId] = entry;
+    Object.keys(base).forEach(function(k){ out[k] = base[k]; });
+    Object.keys(sh).forEach(function(k){ out[k] = sh[k]; });
+    return out;
+  }
+  // Löscht nur das Training. Gewicht und Schlaf des Tages bleiben erhalten.
   function deleteSession(id){
+    delete shadow[id];
+    var s0 = sessionById(id), keepDay = !!(s0 && (s0.bw || s0.sl));
+    if (id === todayId()){ try { localStorage.removeItem("fit-draft"); localStorage.removeItem("fit-fin"); localStorage.removeItem("fit-done"); } catch (e) {} draftMem = null; autoDone = {}; dirty = {}; }
     return ready.then(function(){
-      if (mode === "local"){ var o = loadLocal(LKEY) || {}; delete o[id]; writeLocal(LKEY, o); sessions = sessionsFromLocal(o); renderTraining(); return; }
+      if (mode === "local"){ var o = loadLocal(LKEY) || {}; if (keepDay && o[id]){ o[id].entries = {}; o[id].tr = null; o[id].note = ""; } else delete o[id]; writeLocal(LKEY, o); sessions = sessionsFromLocal(o); renderTraining(); return; }
       if (mode !== "db") return Promise.reject({code:"readonly"});
-      return enqueue(function(){ return withRetry(function(){ return col.doc(id).delete(); }).then(function(){ delete known[id]; }); });
+      return enqueue(function(){ return withRetry(function(){ return keepDay ? col.doc(id).update({entries:{}, tr:null, note:""}) : col.doc(id).delete(); }).then(function(){ if (!keepDay) delete known[id]; }); });
     });
   }
   function errText(e){
@@ -3054,8 +3119,9 @@ body:not(.tm) .list{margin-top:0 !important}
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "1.7", APP_BUILT = "2026-11-26T20:28:21Z";
+  var APP_VERSION = "2.0", APP_BUILT = "2026-11-26T20:47:51Z";
   var CHANGES = [
+    ["2.0", "Offline-fähig: speichert ohne Netz und synchronisiert später. Sicherer (keine Fremd-Skripte, Sicherheits-Header). Detailliertere Muskelbilder. App-Icon."],
     ["1.7", "Ruhetag: Übungen sichtbar, trotzdem trainieren möglich"],
     ["1.6", "Versionsanzeige im Verlauf"],
     ["1.5", "Übungsvorschau ohne Bearbeiten, Testtrainings entfernt"],
@@ -3087,10 +3153,27 @@ body:not(.tm) .list{margin-top:0 !important}
   function renderDataBox(){
     var el = $("#dataWhere"); if (!el) return;
     var lo = $("#lgOut"); if (lo) lo.hidden = !SB;
-    if (SB && mode === "db"){ el.textContent = "Deine Daten liegen in deiner eigenen Supabase-Datenbank und sind auf allen Geräten gleich. Mach trotzdem ab und zu eine Sicherung."; $("#dataMeta").textContent = "Supabase"; return; }
+    if (SB && mode === "db"){ el.textContent = "Deine Daten liegen in deiner eigenen Datenbank (Supabase), sind auf allen Geräten gleich und werden auf diesem Gerät zwischengespeichert. Ohne Netz wird später automatisch gespeichert." + (SB.auth.email() ? " Angemeldet als " + SB.auth.email() + "." : ""); $("#dataMeta").textContent = "Supabase"; return; }
     el.textContent = mode === "db" ? "Deine Daten liegen in deinem Claude-Konto in diesem Artefakt und sind auf allen Geräten gleich. Zusätzlich merkt sich dieses Gerät Kleinigkeiten wie offene Entwürfe. Mach regelmäßig eine Sicherung, z. B. in die Notizen-App."
       : mode === "local" ? "Deine Daten liegen nur auf diesem Gerät im Browser. Mach regelmäßig eine Sicherung." : "Speichern ist hier gerade nicht möglich.";
     $("#dataMeta").textContent = mode === "db" ? "Claude-Konto" : mode === "local" ? "Nur dieses Gerät" : "";
+  }
+  // Importierte Trainingsdaten streng prüfen: nur bekannte Übungen, nur Zahlen und erlaubte Werte.
+  function cleanEntries(x){
+    var out = {}; if (!x || typeof x !== "object") return out;
+    Object.keys(x).forEach(function(k){
+      var ex = BYID[k], e = x[k]; if (!ex || !e || typeof e !== "object") return;
+      var o = {}; if (typeof e.at === "string" && !isNaN(Date.parse(e.at))) o.at = e.at.slice(0, 40);
+      if (ex.kind === "time"){ o.done = !!e.done; var m = clean(e.min), inc = clean(e.inc), sp = clean(e.spd); if (m !== null && m >= 0 && m < 600) o.min = Math.round(m); if (inc !== null && inc >= 0 && inc < 50) o.inc = inc; if (sp !== null && sp > 0 && sp < 40) o.spd = sp; out[k] = o; return; }
+      o.v = 2;
+      o.sets = entrySets(e).slice(0, 10).map(function(z){ return {kg: z.kg !== null && z.kg >= 0 && z.kg < 1000 ? z.kg : null, reps: z.reps !== null && z.reps >= 0 && z.reps < 200 ? Math.round(z.reps) : null, rating: z.rating || ""}; });
+      o.kg = o.sets[0] ? o.sets[0].kg : null;
+      var dk = cleanKg(e.dropKg), dr = clean(e.dropReps);
+      o.dropKg = dk !== null && dk >= 0 && dk < 1000 ? dk : null; o.dropReps = dr !== null && dr >= 0 && dr < 200 ? Math.round(dr) : null;
+      o.rating = rating(e.rating) || ""; o.dropRating = rating(e.dropRating) || "";
+      out[k] = o;
+    });
+    return out;
   }
   function putDay(kind, id, body){
     return ready.then(function(){
@@ -3099,7 +3182,15 @@ body:not(.tm) .list{margin-top:0 !important}
       return enqueue(function(){ return withRetry(function(){ return c.doc(id).set(body); }); });
     });
   }
-  $("#lgOut").addEventListener("click", function(){ if (!SB) return; SB.client.auth.signOut().then(function(){ location.reload(); }); });
+  var outArm = false;
+  $("#lgOut").addEventListener("click", function(){
+    if (!SB) return;
+    var n = SB.db.pending();
+    if (!outArm){ outArm = true; this.textContent = n ? "Noch " + n + " ungespeichert! Trotzdem abmelden?" : "Wirklich abmelden?"; var b = this; setTimeout(function(){ outArm = false; b.textContent = "Abmelden"; }, 4000); return; }
+    SB.db.wipe();
+    try { Object.keys(localStorage).forEach(function(k){ if (/^(fit-|fav-v1|ui-)/.test(k)) localStorage.removeItem(k); }); } catch (e) {}
+    SB.auth.signOut().then(function(){ location.reload(); });
+  });
   $("#exBtn").addEventListener("click", function(){
     var txt = JSON.stringify(buildBackup()), ta = $("#exText"); ta.value = txt; ta.hidden = false;
     var done = function(ok){ $("#dataSt").textContent = ok ? "Kopiert ✓ Füge die Sicherung z. B. in deine Notizen ein." : "Markiere den Text oben und kopiere ihn."; };
@@ -3114,7 +3205,8 @@ body:not(.tm) .list{margin-top:0 !important}
     if (imArm !== raw){ imArm = raw; st.textContent = nT.length + " Tage Training/Körper, " + nF.length + " Tage Essen, " + nW.length + " Tage Wasser gefunden. Nochmal tippen zum Übernehmen."; btn.textContent = "Wirklich übernehmen"; return; }
     btn.disabled = true; st.textContent = "Übernehme …";
     var jobs = [];
-    nT.forEach(function(id){ var x = d.t[id] || {}, p = {entries: x.entries && typeof x.entries === "object" ? x.entries : {}};
+    shadow = {};
+    nT.forEach(function(id){ var x = d.t[id] || {}, p = {entries: cleanEntries(x.entries)};
       if (typeof x.note === "string") p.note = x.note.slice(0, 300); if (clean(x.bw)) p.bw = clean(x.bw);
       var sl = cleanSleep(x.sl); if (sl) p.sl = {from:sl.from, to:sl.to}; var tr = cleanTr(x.tr); if (tr) p.tr = tr;
       jobs.push(function(){ return saveSessionPatch(p, id); }); });
@@ -3130,70 +3222,254 @@ body:not(.tm) .list{margin-top:0 !important}
   });
 
   // ---------- Eigene Datenbank (Supabase), wenn in config.js eingetragen ----------
+  // Direkt per fetch, ohne externe Bibliothek. Lokaler Zwischenspeicher + Warteschlange:
+  // Eingaben gehen nie verloren, auch ohne Netz im Gym. Sobald Netz da ist, wird synchronisiert.
   var SB = null, SB_P = null;
-  function sbConf(){ var c = window.APP_CONFIG || {}; return c.supabaseUrl && c.supabaseAnonKey ? c : null; }
-  function loadScript(src){ return new Promise(function(res, rej){ var el = document.createElement("script"); el.src = src; el.onload = res; el.onerror = rej; document.head.appendChild(el); }); }
-  function sbErr(e){ return {code: /fetch|network|timeout/i.test((e && e.message) || "") ? "unavailable" : "unknown", message: e && e.message}; }
-  function makeSbDb(client, uid){
-    var listeners = [];
-    function split(path){ var p = path.split("/"); return {coll:p.slice(0, -1).join("/"), id:p[p.length - 1]}; }
-    function snapDoc(id, row){ return {id:id, exists:!!row, data:function(){ return row ? row.data : undefined; }}; }
-    function fetchColl(coll){ return client.from("docs").select("doc_id,data").eq("coll", coll).limit(5000).then(function(r){ if (r.error) throw sbErr(r.error); return r.data || []; }); }
-    function fetchDoc(coll, id){ return client.from("docs").select("doc_id,data").eq("coll", coll).eq("doc_id", id).maybeSingle().then(function(r){ if (r.error) throw sbErr(r.error); return r.data; }); }
-    function notify(coll){ listeners.forEach(function(l){ if (l.coll === coll && l.q) l.run(); }); }
+  function sbConf(){
+    var c = window.APP_CONFIG || {}, u = typeof c.supabaseUrl === "string" ? c.supabaseUrl.trim().replace(/\/+$/, "") : "";
+    return /^https:\/\/[^\s/]+$/.test(u) && typeof c.supabaseAnonKey === "string" && c.supabaseAnonKey.trim() ? {url:u, key:c.supabaseAnonKey.trim()} : null;
+  }
+  function lsGet(k){ try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
+  function lsSet(k, v){ try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+  function readBody(r){ return r.text().then(function(t){ if (!t) return null; try { return JSON.parse(t); } catch (e) { return null; } }); }
+  function setPath(o, path, v){ var ks = path.split("."), cur = o; for (var i = 0; i < ks.length - 1; i++){ if (!cur[ks[i]] || typeof cur[ks[i]] !== "object") cur[ks[i]] = {}; cur = cur[ks[i]]; } cur[ks[ks.length - 1]] = v; }
+
+  function sbAuth(cfg){
+    var KEY = "sb-auth-v1", s = lsGet(KEY), refreshing = null, onOut = null;
+    function keep(d){ return {access_token:d.access_token, refresh_token:d.refresh_token, expires_at:d.expires_at || Math.floor(Date.now() / 1000) + (d.expires_in || 3600), uid:(d.user && d.user.id) || (s && s.uid) || null, email:(d.user && d.user.email) || (s && s.email) || ""}; }
+    if (!s || !s.access_token){
+      try { var ref = cfg.url.split("//")[1].split(".")[0], old = lsGet("sb-" + ref + "-auth-token"); if (old && old.access_token && old.refresh_token && old.user && old.user.id){ s = keep(old); lsSet(KEY, s); } } catch (e) {}
+    }
+    function save(d){ s = keep(d); lsSet(KEY, s); return s; }
+    function call(path, body, token){
+      var h = {"apikey":cfg.key, "Content-Type":"application/json"}; if (token) h.Authorization = "Bearer " + token;
+      return fetch(cfg.url + "/auth/v1/" + path, {method:"POST", headers:h, body: body ? JSON.stringify(body) : undefined, cache:"no-store"}).then(function(r){
+        return readBody(r).then(function(j){ if (!r.ok) throw {status:r.status, code:String((j && (j.error_code || j.error || j.code)) || ""), message:String((j && (j.msg || j.error_description || j.message)) || ("HTTP " + r.status))}; return j; });
+      }, function(){ throw {network:true, message:"offline"}; });
+    }
+    var A = {
+      uid: function(){ return s && s.uid; },
+      email: function(){ return (s && s.email) || ""; },
+      token: function(){ return (s && s.access_token) || cfg.key; },
+      signedIn: function(){ return !!(s && s.access_token && s.refresh_token && s.uid); },
+      onSignedOut: function(fn){ onOut = fn; },
+      signIn: function(email, pw){ return call("token?grant_type=password", {email:email, password:pw}).then(function(j){ if (!j || !j.access_token) throw {message:"Anmeldung fehlgeschlagen"}; return save(j); }); },
+      signUp: function(email, pw){ return call("signup", {email:email, password:pw}).then(function(j){ if (!j || !j.access_token) throw {code:"confirm", message:"confirm"}; return save(j); }); },
+      refresh: function(){
+        if (!s || !s.refresh_token) return Promise.reject({auth:true, message:"nicht angemeldet"});
+        if (!refreshing){
+          refreshing = call("token?grant_type=refresh_token", {refresh_token:s.refresh_token}).then(function(j){ refreshing = null; return save(j); }, function(e){
+            refreshing = null;
+            if (!e.network && e.status >= 400 && e.status < 500){ s = null; lsSet(KEY, null); if (onOut) onOut(); }
+            throw e;
+          });
+        }
+        return refreshing;
+      },
+      fresh: function(){ return s && s.expires_at && Date.now() / 1000 > s.expires_at - 60 ? A.refresh() : Promise.resolve(); },
+      signOut: function(){ var t = s && s.access_token; s = null; lsSet(KEY, null); lsSet("sb-" + cfg.url.split("//")[1].split(".")[0] + "-auth-token", null); return t ? call("logout", null, t).catch(function(){}) : Promise.resolve(); }
+    };
+    return A;
+  }
+
+  function sbRest(cfg, auth){
+    var enc = encodeURIComponent;
+    function req(method, q, body, prefer, again){
+      return auth.fresh().catch(function(e){ if (!(e && e.network)) throw e; }).then(function(){
+        var h = {"apikey":cfg.key, "Authorization":"Bearer " + auth.token(), "Content-Type":"application/json"}; if (prefer) h.Prefer = prefer;
+        return fetch(cfg.url + "/rest/v1/" + q, {method:method, headers:h, body: body ? JSON.stringify(body) : undefined, cache:"no-store"}).then(function(r){ return r; }, function(){ throw {network:true, message:"offline"}; });
+      }).then(function(r){
+        if (r.status === 401 && !again) return auth.refresh().then(function(){ return req(method, q, body, prefer, true); });
+        return readBody(r).then(function(j){
+          if (!r.ok) throw {status:r.status, fatal:[400, 409, 413, 422].indexOf(r.status) >= 0, message:String((j && (j.message || j.msg)) || ("HTTP " + r.status))};
+          return j;
+        });
+      });
+    }
+    return {
+      list: function(coll){ return req("GET", "docs?select=doc_id,data&coll=eq." + enc(coll) + "&limit=10000"); },
+      one: function(coll, id){ return req("GET", "docs?select=data&coll=eq." + enc(coll) + "&doc_id=eq." + enc(id) + "&limit=1").then(function(rows){ return Array.isArray(rows) && rows[0] ? rows[0].data : null; }); },
+      put: function(coll, id, data){ return req("POST", "docs?on_conflict=user_id,coll,doc_id", [{user_id:auth.uid(), coll:coll, doc_id:id, data:data, updated_at:new Date().toISOString()}], "resolution=merge-duplicates,return=minimal"); },
+      del: function(coll, id){ return req("DELETE", "docs?coll=eq." + enc(coll) + "&doc_id=eq." + enc(id), null, "return=minimal"); }
+    };
+  }
+
+  // Zusammenführen, falls ein anderes Gerät denselben Tag inzwischen geändert hat (nichts geht verloren)
+  function jeq(a, b){ return JSON.stringify(a) === JSON.stringify(b); }
+  function isObj(x){ return !!x && typeof x === "object" && !Array.isArray(x); }
+  function mergeArr(b, o, t){
+    b = Array.isArray(b) ? b : []; o = Array.isArray(o) ? o : []; t = Array.isArray(t) ? t : [];
+    function idOf(x){ return x && typeof x === "object" && typeof x.id === "string" ? x.id : null; }
+    if (!o.concat(t).every(idOf)) return o;
+    var bIds = b.map(idOf), oMap = {}, out = [], seen = {};
+    o.forEach(function(x){ oMap[idOf(x)] = x; });
+    t.forEach(function(x){ var id = idOf(x), bi = bIds.indexOf(id); if (bi >= 0 && !oMap[id]) return; out.push(oMap[id] && (bi < 0 || !jeq(oMap[id], b[bi])) ? oMap[id] : x); seen[id] = 1; });
+    o.forEach(function(x){ var id = idOf(x); if (seen[id] || bIds.indexOf(id) >= 0) return; out.push(x); });
+    return out;
+  }
+  function merge3(b, o, t){
+    if (jeq(o, t) || jeq(t, b)) return o;
+    if (jeq(o, b)) return t;
+    if (Array.isArray(o) || Array.isArray(t)) return mergeArr(b, o, t);
+    if (isObj(o) && isObj(t)){
+      var bb = isObj(b) ? b : {}, out = {}, keys = {};
+      [bb, o, t].forEach(function(x){ Object.keys(x).forEach(function(k){ keys[k] = 1; }); });
+      Object.keys(keys).forEach(function(k){ var v = merge3(bb[k], o[k], t[k]); if (v !== undefined) out[k] = v; });
+      return out;
+    }
+    return o;
+  }
+  function sbStore(rest, uid, onState){
+    var CK = "sb-cache-" + uid, PK = "sb-pend-" + uid;
+    var cache = lsGet(CK) || {}, pend = lsGet(PK) || [], listeners = [], flushing = false, retryT = null, cacheT = null, lastErr = "", inflight = {}, wseq = {}, dead = false;
+    if (!Array.isArray(pend)) pend = [];
+    function clone(v){ return v === undefined || v === null ? v : JSON.parse(JSON.stringify(v)); }
+    function state(){ if (onState) onState({pending:pend.length, error:lastErr}); }
+    function saveCache(){ if (dead) return; clearTimeout(cacheT); cacheT = setTimeout(function(){ if (!dead) lsSet(CK, cache); }, 300); }
+    function savePend(){ if (dead) return; lsSet(PK, pend); state(); }
+    function loaded(c){ return Object.prototype.hasOwnProperty.call(cache, c); }
+    function view(c){
+      var out = {}, base = cache[c] || {};
+      Object.keys(base).forEach(function(k){ out[k] = base[k]; });
+      pend.forEach(function(op){ if (op.c !== c) return; if (op.d) delete out[op.i]; else out[op.i] = op.v; });
+      return out;
+    }
+    function emit(c){ listeners.slice().forEach(function(l){ if (l.coll === c) l.emit(); }); }
+    function refresh(c){
+      if (inflight[c]) return inflight[c];
+      var s0 = wseq[c] || 0;
+      inflight[c] = rest.list(c).then(function(rows){
+        inflight[c] = null;
+        if ((wseq[c] || 0) !== s0) return refresh(c);
+        var m = {}; (Array.isArray(rows) ? rows : []).forEach(function(r){ if (r && typeof r.doc_id === "string") m[r.doc_id] = r.data; });
+        cache[c] = m; saveCache(); if (!pend.length) lastErr = ""; state(); emit(c);
+      }, function(e){ inflight[c] = null; throw e; });
+      return inflight[c];
+    }
+    function add(op){
+      var prev = null; pend.forEach(function(x){ if (x.c === op.c && x.i === op.i) prev = x; });
+      op.b = prev ? (prev.d ? null : prev === pend[0] && flushing ? clone(prev.v) : prev.b) : clone(cache[op.c] ? cache[op.c][op.i] : undefined);
+      pend = pend.filter(function(x, i){ return !(x.c === op.c && x.i === op.i) || (flushing && i === 0); });
+      pend.push(op); savePend();
+      Promise.resolve().then(function(){ emit(op.c); });
+      flush();
+    }
+    function flush(){
+      if (flushing || !pend.length || dead) return;
+      flushing = true;
+      var op = pend[0];
+      (op.d ? rest.del(op.c, op.i) : rest.one(op.c, op.i).then(function(server){
+        var v = op.v;
+        if (server && !jeq(server, op.b === undefined ? null : op.b)) v = merge3(op.b, op.v, server);
+        if (v && Array.isArray(v.log) && typeof v.ml === "number") v.ml = v.log.reduce(function(a, e){ return a + (e && e.ml > 0 ? e.ml : 0); }, 0);
+        op.v = v;
+        if (server && jeq(server, v)) return;
+        return rest.put(op.c, op.i, v);
+      })).then(function(){
+        if (!cache[op.c]) cache[op.c] = {};
+        if (op.d) delete cache[op.c][op.i]; else cache[op.c][op.i] = op.v;
+        wseq[op.c] = (wseq[op.c] || 0) + 1;
+        saveCache(); if (pend[0] === op) pend.shift(); lastErr = ""; flushing = false; savePend(); emit(op.c); flush();
+      }, function(e){
+        flushing = false;
+        if (e && e.fatal){ lastErr = e.message || "Fehler"; if (pend[0] === op) pend.shift(); savePend(); flush(); return; }
+        lastErr = e && !e.network ? (e.message || "Fehler") : ""; state();
+        clearTimeout(retryT); retryT = setTimeout(flush, 15000);
+      });
+    }
+    function listen(c, l, err){
+      listeners.push(l);
+      if (loaded(c)) l.emit();
+      refresh(c).catch(function(e){ if (!loaded(c)) l.emit(true); if (err && e && !e.network) err(e); });
+      return function(){ var i = listeners.indexOf(l); if (i >= 0) listeners.splice(i, 1); };
+    }
     function Doc(path){
-      var s = split(path);
-      var api = {
-        id: s.id,
-        collection: function(name){ return Coll(path + "/" + name); },
-        get: function(){ return fetchDoc(s.coll, s.id).then(function(row){ return snapDoc(s.id, row); }); },
-        set: function(data){ return client.from("docs").upsert({user_id:uid, coll:s.coll, doc_id:s.id, data:data, updated_at:new Date().toISOString()}).then(function(r){ if (r.error) throw sbErr(r.error); if (data && data.date) notify(s.coll); }); },
-        update: function(patch){ return fetchDoc(s.coll, s.id).then(function(row){ var d = row && row.data ? row.data : {}; for (var k in patch) d[k] = patch[k]; return api.set(d); }); },
-        delete: function(){ return client.from("docs").delete().eq("coll", s.coll).eq("doc_id", s.id).then(function(r){ if (r.error) throw sbErr(r.error); notify(s.coll); }); },
-        onSnapshot: function(cb, err){ var l = {coll:s.coll, q:false, run:function(){ fetchDoc(s.coll, s.id).then(function(row){ cb(snapDoc(s.id, row)); }, function(e){ if (err) err(e); }); }}; listeners.push(l); l.run(); return function(){ var i = listeners.indexOf(l); if (i >= 0) listeners.splice(i, 1); }; }
-      };
-      return api;
-    }
-    function Coll(coll, ord, lim){
-      function run(){ return fetchColl(coll).then(function(rows){
-        var docs = rows.map(function(r){ return snapDoc(r.doc_id, r); });
-        if (ord){ docs = docs.filter(function(d){ return (d.data() || {})[ord.f] !== undefined; }); docs.sort(function(a, b){ var x = a.data()[ord.f], y = b.data()[ord.f]; return (x < y ? -1 : x > y ? 1 : 0) * (ord.d === "desc" ? -1 : 1); }); }
-        if (lim) docs = docs.slice(0, lim); return {docs:docs}; }); }
+      var p = path.split("/"), c = p.slice(0, -1).join("/"), id = p[p.length - 1];
+      function snap(){ var v = view(c)[id]; return {id:id, exists: v !== undefined && v !== null, data:function(){ return clone(v); }}; }
       return {
-        doc: function(id){ return Doc(coll + "/" + id); },
-        orderBy: function(f, d){ return Coll(coll, {f:f, d:d}, lim); },
-        limit: function(n){ return Coll(coll, ord, n); },
-        get: run,
-        onSnapshot: function(cb, err){ var busy = false, again = false, l = {coll:coll, q:true, run:function(){ if (busy){ again = true; return; } busy = true; run().then(cb, function(e){ if (err) err(e); }).then(function(){ busy = false; if (again){ again = false; l.run(); } }); }}; listeners.push(l); l.run(); return function(){ var i = listeners.indexOf(l); if (i >= 0) listeners.splice(i, 1); }; }
+        id:id,
+        collection: function(name){ return Coll(path + "/" + name); },
+        get: function(){ return loaded(c) ? Promise.resolve(snap()) : refresh(c).then(snap, function(){ return snap(); }); },
+        set: function(data){ add({c:c, i:id, v:clone(data)}); return Promise.resolve(); },
+        update: function(patch){ var base = clone(view(c)[id]) || {}; Object.keys(patch).forEach(function(k){ setPath(base, k, clone(patch[k])); }); add({c:c, i:id, v:base}); return Promise.resolve(); },
+        delete: function(){ add({c:c, i:id, d:1}); return Promise.resolve(); },
+        onSnapshot: function(cb, err){
+          var last;
+          return listen(c, {coll:c, emit:function(force){ var v = view(c)[id], key = JSON.stringify(v === undefined ? null : v); if (key === last && !force) return; last = key; try { cb(snap()); } catch (e) { console.error(e); } }}, err);
+        }
       };
     }
-    function refreshAll(){ listeners.forEach(function(l){ if (l.q) l.run(); }); }
-    document.addEventListener("visibilitychange", function(){ if (!document.hidden) refreshAll(); });
-    setInterval(function(){ if (!document.hidden) refreshAll(); }, 60000);
-    return {collection:function(p){ return Coll(p); }, doc:Doc};
+    function Coll(c, ord, lim){
+      function build(){
+        var v = view(c), ids = Object.keys(v).filter(function(k){ return v[k] && typeof v[k] === "object"; });
+        if (ord){ ids = ids.filter(function(k){ return v[k][ord.f] !== undefined; }); ids.sort(function(a, b){ var x = v[a][ord.f], y = v[b][ord.f]; return (x < y ? -1 : x > y ? 1 : 0) * (ord.d === "desc" ? -1 : 1); }); }
+        if (lim) ids = ids.slice(0, lim);
+        return {docs: ids.map(function(k){ var d = v[k]; return {id:k, exists:true, data:function(){ return clone(d); }}; }), key: JSON.stringify(ids.map(function(k){ return [k, v[k]]; }))};
+      }
+      return {
+        doc: function(id){ return Doc(c + "/" + id); },
+        orderBy: function(f, d){ return Coll(c, {f:f, d:d}, lim); },
+        limit: function(n){ return Coll(c, ord, n); },
+        get: function(){ return (loaded(c) ? Promise.resolve() : refresh(c).catch(function(){})).then(build); },
+        onSnapshot: function(cb, err){
+          var last;
+          return listen(c, {coll:c, emit:function(force){ var sn = build(); if (sn.key === last && !force) return; last = sn.key; try { cb(sn); } catch (e) { console.error(e); } }}, err);
+        }
+      };
+    }
+    function refreshAll(){ var seen = {}; listeners.forEach(function(l){ if (!seen[l.coll]){ seen[l.coll] = 1; refresh(l.coll).catch(function(){}); } }); }
+    document.addEventListener("visibilitychange", function(){ if (!document.hidden){ flush(); refreshAll(); } });
+    window.addEventListener("online", function(){ flush(); refreshAll(); });
+    var lastFocus = 0; window.addEventListener("focus", function(){ if (Date.now() - lastFocus > 5000){ lastFocus = Date.now(); flush(); refreshAll(); } });
+    window.addEventListener("pageshow", function(ev){ if (ev.persisted){ flush(); refreshAll(); } });
+    setInterval(function(){ if (!document.hidden){ flush(); refreshAll(); } }, 60000);
+    setTimeout(function(){ state(); flush(); }, 0);
+    return {collection:function(p){ return Coll(p); }, doc:Doc, pending:function(){ return pend.length; }, flush:flush, wipe:function(){ dead = true; clearTimeout(cacheT); clearTimeout(retryT); lsSet(CK, null); lsSet(PK, null); }};
+  }
+
+  function authMsg(e){
+    if (e && e.network) return "Keine Verbindung. Versuch es nochmal.";
+    var c = String((e && e.code) || "") + " " + String((e && e.message) || "");
+    if (/confirm/i.test(c)) return "Bestätige zuerst die E-Mail und melde dich dann an.";
+    if (/invalid_credentials|invalid_grant|invalid login/i.test(c)) return "E-Mail oder Passwort ist falsch.";
+    if (/user_already_exists|already registered/i.test(c)) return "Das Konto gibt es schon. Bitte anmelden.";
+    if (/signup_disabled|signups not allowed/i.test(c)) return "Neue Konten sind gesperrt. Bitte anmelden.";
+    if (/weak_password|password should/i.test(c)) return "Passwort ist zu schwach. Nimm mindestens 8 Zeichen.";
+    if (/email_address_invalid|validate email|invalid.*email/i.test(c)) return "Die E-Mail-Adresse ist ungültig.";
+    if (/rate|too many/i.test(c)) return "Zu viele Versuche. Warte kurz.";
+    return "Hat nicht geklappt. Versuch es nochmal.";
+  }
+  function showLogin(auth){
+    return new Promise(function(res){
+      var box = $("#login"), st = $("#lgSt"), form = $("#lgForm"), busy = false; box.hidden = false;
+      function go(up){
+        if (busy) return;
+        var m = $("#lgMail").value.trim(), pw = $("#lgPw").value;
+        if (!/^\S+@\S+\.\S+$/.test(m)){ st.textContent = "Gib deine E-Mail-Adresse ein."; $("#lgMail").focus(); return; }
+        if (pw.length < 6){ st.textContent = "Das Passwort braucht mindestens 6 Zeichen."; $("#lgPw").focus(); return; }
+        busy = true; $("#lgIn").disabled = $("#lgUp").disabled = true; st.textContent = up ? "Erstelle Konto …" : "Melde an …";
+        (up ? auth.signUp(m, pw) : auth.signIn(m, pw)).then(function(){ box.hidden = true; $("#lgPw").value = ""; st.textContent = ""; res(); }, function(e){ st.textContent = authMsg(e); })
+          .then(function(){ busy = false; $("#lgIn").disabled = $("#lgUp").disabled = false; });
+      }
+      form.onsubmit = function(ev){ ev.preventDefault(); go(false); };
+      $("#lgUp").onclick = function(){ go(true); };
+    });
+  }
+  var syncShowT = null;
+  function syncState(st){
+    var el = $("#syncInfo"); if (!el) return;
+    clearTimeout(syncShowT);
+    if (st.error){ el.textContent = "⚠ Synchronisieren hakt: " + st.error; el.className = "syncinfo err"; el.hidden = false; return; }
+    if (!st.pending){ el.hidden = true; return; }
+    syncShowT = setTimeout(function(){ el.textContent = navigator.onLine === false ? "Offline · " + st.pending + (st.pending === 1 ? " Änderung wird" : " Änderungen werden") + " gespeichert, sobald du Netz hast" : "Speichere " + st.pending + (st.pending === 1 ? " Änderung" : " Änderungen") + " …"; el.className = "syncinfo"; el.hidden = false; }, 2500);
   }
   function initSupabase(){
-    var c = sbConf(); if (!c) return Promise.resolve(null);
-    return loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js").then(function(){
-      var client = window.supabase.createClient(c.supabaseUrl, c.supabaseAnonKey, {auth:{persistSession:true, autoRefreshToken:true}});
-      return client.auth.getSession().then(function(r){
-        var ses = r && r.data && r.data.session; if (ses) return ses.user.id;
-        return new Promise(function(res){
-          var box = $("#login"), st = $("#lgSt"); box.hidden = false;
-          function go(up){
-            var m = $("#lgMail").value.trim(), pw = $("#lgPw").value;
-            if (!m || pw.length < 6){ st.textContent = "E-Mail und Passwort (mind. 6 Zeichen) eingeben."; return; }
-            st.textContent = up ? "Erstelle Konto …" : "Melde an …";
-            (up ? client.auth.signUp({email:m, password:pw}) : client.auth.signInWithPassword({email:m, password:pw})).then(function(r2){
-              if (r2.error){ st.textContent = r2.error.message; return; }
-              if (!r2.data.session){ st.textContent = "Bestätige die E-Mail und melde dich dann an."; return; }
-              box.hidden = true; res(r2.data.session.user.id);
-            }, function(){ st.textContent = "Keine Verbindung. Versuch es nochmal."; });
-          }
-          $("#lgIn").onclick = function(){ go(false); }; $("#lgUp").onclick = function(){ go(true); };
-        });
-      }).then(function(uid){ SB = {client:client, uid:uid, db:makeSbDb(client, uid)}; return SB; });
-    }).catch(function(){ setBanner("Datenbank nicht erreichbar. Gespeichert wird vorerst nur auf diesem Gerät."); return null; });
+    var cfg = sbConf(); if (!cfg) return Promise.resolve(null);
+    var auth = sbAuth(cfg);
+    function start(){ var uid = auth.uid(); SB = {auth:auth, uid:uid, cfg:cfg, db:sbStore(sbRest(cfg, auth), uid, syncState)}; return SB; }
+    auth.onSignedOut(function(){ showLogin(auth).then(function(){ location.reload(); }); });
+    if (auth.signedIn()) return Promise.resolve(start());
+    return showLogin(auth).then(start);
   }
   SB_P = sbConf() ? initSupabase() : null;
 
@@ -3493,7 +3769,7 @@ body:not(.tm) .list{margin-top:0 !important}
     $("#tmDoneT").textContent = allDone ? "Training fertig 💪" : "Training beendet";
     var hit = musclesOf(rws.map(function(r){ return r.ex.id; }));
     $("#tmDoneFig").innerHTML = '<div class="tdfw">' + fullBody(hit) + '<span class="tdv l">Vorne</span><span class="tdv r">Hinten</span></div>' +
-      (hit.p.length ? '<div class="tdm">' + uniqNames(hit.p).map(function(n){ return '<span class="p">' + n + '</span>'; }).join("") + uniqNames(hit.s).filter(function(n){ return uniqNames(hit.p).indexOf(n) < 0; }).map(function(n){ return '<span class="s">' + n + '</span>'; }).join("") + '</div>' : '<p class="tdn">Noch kein Satz abgehakt.</p>');
+      (hit.p.length ? '<div class="tdm">' + uniqNames(hit.p).map(function(n){ return '<span class="p">' + n + '</span>'; }).join("") + '</div>' + (function(){ var sn = uniqNames(hit.s).filter(function(n){ return uniqNames(hit.p).indexOf(n) < 0; }); return sn.length ? '<p class="tdn">Mittrainiert: ' + sn.join(", ") + '</p>' : ""; })() : '<p class="tdn">Noch kein Satz abgehakt.</p>');
     $("#tmDoneL").innerHTML = rws.map(function(r){ return '<li><div><b>' + r.ex.name + '</b><span class="vnext ' + r.nt.cls + '">Nächstes Mal: <b>' + r.nt.tx + '</b></span></div><span class="vt ' + r.tr.cls + '">' + r.tr.tx + '</span></li>'; }).join("");
     $("#tmDoneS").innerHTML = [[min || 0, "Minuten"], [n + "/" + PLAN.length, "Übungen"], [sets, "Sätze"], [Math.round(vol).toLocaleString("de-DE"), "kg bewegt"]].map(function(x){ return '<div><b>' + x[0] + '</b><span>' + x[1] + '</span></div>'; }).join("");
     $("#tmDone").hidden = false;
@@ -3568,7 +3844,7 @@ body:not(.tm) .list{margin-top:0 !important}
     if (!(mode === "db" && uiRef)) return;
     clearTimeout(uiTimer);
     var run = function(){ try { var op = $(".ex.open"), pr = uiRef.set({open: op ? {d:todayId(), id:op.dataset.id} : null, drafts: readDrafts(), timer: (tState && !tState.over) ? {end:tState.end, total:tState.total} : null, at: new Date().toISOString()}); if (pr && pr.catch) pr.catch(function(){}); } catch (e) {} };
-    if (now) run(); else uiTimer = setTimeout(run, 400);
+    if (now) run(); else uiTimer = setTimeout(run, SB ? 1500 : 400);
   }
   // Automatischer Ablauf: Satz mit "Fertig" abhaken → Pause; letzter Satz → Drop sofort → Pause → nächste Übung
   var autoDone = {};
