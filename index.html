@@ -3104,7 +3104,7 @@ body.tm .bodyrow .body{max-height:124px !important}
   }
   function initSupabase(){
     var c = sbConf(); if (!c) return Promise.resolve(null);
-    return loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js").then(function(){
+    return loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js").then(function(){
       var client = window.supabase.createClient(c.supabaseUrl, c.supabaseAnonKey, {auth:{persistSession:true, autoRefreshToken:true}});
       return client.auth.getSession().then(function(r){
         var ses = r && r.data && r.data.session; if (ses) return ses.user.id;
