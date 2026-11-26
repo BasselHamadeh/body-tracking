@@ -2631,7 +2631,7 @@ body:not(.tm) .list{margin-top:0 !important}
     var nowIso = new Date().toISOString(), items = cleanItems(pasted.map(function(x){ return {name:x.name, amount:"", kcal:x.kcal, protein:x.protein, fat:x.fat, sugar:x.sugar, at:nowIso}; }));
     if (!items.length){ toast("Die Werte passen nicht."); return; }
     var btn = this; btn.disabled = true;
-    saveFood(todayFood().concat(items)).then(function(){ $("#mPaste").value = ""; renderPaste(); toast(items.length > 1 ? items.length + " Einträge hinzugefügt" : items[0].name + " hinzugefügt"); renderFood(); })
+    saveFood(todayFood().concat(items)).then(function(){ return addWaterFor(items); }).then(function(wml){ if (wml) setTimeout(function(){ toast("+" + wml + " ml zum Wasser gezählt 💧"); }, 1400); }).then(function(){ $("#mPaste").value = ""; renderPaste(); toast(items.length > 1 ? items.length + " Einträge hinzugefügt" : items[0].name + " hinzugefügt"); renderFood(); })
       .catch(function(e){ toast(errText(e)); btn.disabled = false; });
   });
   $("#pFav").addEventListener("click", function(){ pasted.forEach(addFav); saveFavs(); renderFavs(); toast("Gemerkt"); });
@@ -2706,6 +2706,20 @@ body:not(.tm) .list{margin-top:0 !important}
     pw.hidden = !hasWater;
     pw.textContent = hasWater ? "Wasser " + liters(pendingWater) + " kommt in den Wasser-Tab" : "";
     box.hidden = false;
+  }
+  // Wasser in einem Getränk (z. B. "Whey mit 400 ml Wasser") zählt zum Wasser-Ziel
+  function waterMl(it){
+    var t = String((it && it.name) || "") + " " + String((it && it.amount) || "");
+    var m = /(\d+(?:[.,]\d+)?)\s*(ml|l)\s+(?:[a-zäöü]+\s+)?wasser/i.exec(t); if (!m) return 0;
+    var v = parseFloat(m[1].replace(",", ".")), ml = Math.round(m[2].toLowerCase() === "l" ? v * 1000 : v);
+    return ml > 0 && ml <= 3000 ? ml : 0;
+  }
+  function addWaterFor(list){ var ml = list.reduce(function(a, it){ return a + waterMl(it); }, 0); return ml > 0 ? addWater(ml).then(function(){ renderWater(); return ml; }) : Promise.resolve(0); }
+  function removeWaterFor(it){
+    var ml = waterMl(it); if (!ml) return Promise.resolve();
+    var log = todayWaterLog(), idx = -1; for (var i = log.length - 1; i >= 0; i--) if (log[i].ml === ml){ idx = i; break; }
+    if (idx < 0) return Promise.resolve();
+    return saveWater(log.slice(0, idx).concat(log.slice(idx + 1))).then(renderWater);
   }
   function isWaterItem(it){ return /wasser|sprudel/i.test(it.name) && it.kcal <= 10; }
   function mlOf(it){
@@ -2806,7 +2820,7 @@ body:not(.tm) .list{margin-top:0 !important}
       if (favEditOn) return;
       var items = cleanItems([{name:f.name, amount:"", kcal:f.kcal, protein:f.protein, sugar:f.sugar, fat:f.fat, at:new Date().toISOString()}]);
       add.classList.add("hit"); setTimeout(function(){ add.classList.remove("hit"); }, 350);
-      saveFood(todayFood().concat(items)).then(function(){ f.u = (f.u || 0) + 1; saveFavs(); var wm = /(\d+)\s*ml\s*wasser/i.exec(f.name); if (wm) addWater(Number(wm[1])); toast(f.name + " hinzugefügt"); renderFood(); renderFavs(); }).catch(function(e){ toast(errText(e)); });
+      saveFood(todayFood().concat(items)).then(function(){ f.u = (f.u || 0) + 1; saveFavs(); addWaterFor([f]); toast(f.name + " hinzugefügt"); renderFood(); renderFavs(); }).catch(function(e){ toast(errText(e)); });
     }
   });
   $("#mFav").addEventListener("click", function(){
@@ -2879,7 +2893,7 @@ body:not(.tm) .list{margin-top:0 !important}
       var cp = {}; for (var k in src) cp[k] = src[k];
       cp.id = uid6(); delete cp.g; delete cp.gt; cp.at = new Date().toISOString();
       if (src.n > 1){ cp.kcal = Math.round(src.kcal / src.n); cp.protein = Math.round(src.protein / src.n); cp.n = 1; cp.amount = "1 Stück"; }
-      saveFood(cur0.concat([cp])).then(function(){ toast("+1 " + src.name); renderFood(); }).catch(function(e){ toast(errText(e)); });
+      saveFood(cur0.concat([cp])).then(function(){ return addWaterFor([cp]); }).then(function(){ toast("+1 " + src.name); renderFood(); }).catch(function(e){ toast(errText(e)); });
       return;
     }
     var b = ev.target.closest(".rm"); if (!b) return;
@@ -2889,7 +2903,8 @@ body:not(.tm) .list{margin-top:0 !important}
       if (idx < 0) return;
       next = cur.slice(0, idx).concat(cur.slice(idx + 1));
     } else next = cur.filter(function(it){ return it.id !== b.dataset.id; });
-    saveFood(next).then(function(){ toast("Entfernt"); renderFood(); }).catch(function(e){ toast(errText(e)); });
+    var gone = cur.filter(function(it){ return next.indexOf(it) < 0; })[0];
+    saveFood(next).then(function(){ return gone ? removeWaterFor(gone) : null; }).then(function(){ toast("Entfernt"); renderFood(); }).catch(function(e){ toast(errText(e)); });
   });
 
   // ---------- Wasser ----------
@@ -3246,8 +3261,9 @@ body:not(.tm) .list{margin-top:0 !important}
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "2.1", APP_BUILT = "2026-11-26T21:02:42Z";
+  var APP_VERSION = "2.2", APP_BUILT = "2026-11-26T21:07:26Z";
   var CHANGES = [
+    ["2.2", "Wasser in Getränken (z. B. Whey mit 400 ml Wasser) zählt automatisch zum Wasser"],
     ["2.1", "Heute gegessen nach Tageszeit, kompakt mit Antippen für Aktionen. Schnell hinzufügen als Kacheln mit Suche. Verlauf zeigt heute."],
     ["2.0", "Offline-fähig: speichert ohne Netz und synchronisiert später. Sicherer (keine Fremd-Skripte, Sicherheits-Header). Detailliertere Muskelbilder. App-Icon."],
     ["1.7", "Ruhetag: Übungen sichtbar, trotzdem trainieren möglich"],
