@@ -1304,6 +1304,24 @@ body.tm .weekcard{display:none !important}
 .durf{display:flex;gap:8px;margin:8px 0 4px}
 .durf input{flex:1;min-width:0;height:42px;border-radius:10px;border:1px solid var(--line);background:var(--field);color:var(--ink);font-size:17px;text-align:center;font-family:var(--cond);font-weight:600}
 .durf .btn{min-height:42px;border-radius:10px;padding:0 14px}
+.vchips.big{display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:6px;margin:2px 0 0}
+.vchips.big span{display:grid;justify-items:center;padding:10px 6px}
+.vchips.big b{font-size:26px}
+.vchips.big .up b{color:var(--green)}.vchips.big .down b{color:var(--red)}
+.vbest{margin:10px 0 0;font-size:14px;color:var(--muted)}
+.vbest b{color:var(--ink)}
+.vrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.vrow:first-child{border-top:0}
+.vrow b{font-size:14.5px;white-space:nowrap}
+.vrow span{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vrow .ic{all:unset;cursor:pointer;width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:var(--bg);font-size:15px;margin:0;padding:0;text-decoration:none}
+.vrow .del.ic.confirm{width:auto;padding:0 8px;color:var(--red);font-size:12.5px;font-weight:700}
+#exWrap[hidden]{display:none}
+body.tm #exWrap{display:block !important}
+#lastTr .vchips{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:2px 0 0}
+#lastTr .vchips span{display:grid;justify-items:center;text-align:center;padding:9px 4px;white-space:normal}
+#lastTr .vchips b{font-size:22px}
+#lastTr .vchips em{display:block;font-size:11.5px;margin:2px 0 0}
 </style>
 </head>
 <body>
@@ -2132,10 +2150,10 @@ body.tm .weekcard{display:none !important}
     $("#ringFg").style.strokeDashoffset = (163.36 * (1 - done / PLAN.length)).toFixed(1);
     $(".ring").hidden = !isTrain; $("#segbar").hidden = !isTrain; $(".legend").hidden = !isTrain; $("#ttrack").hidden = !isTrain; var sb0 = $("#tmStart"); if (sb0){ var tt0 = trState(); sb0.hidden = !isTrain || !!(tt0 && tt0.e && (Date.parse(tt0.e) - Date.parse(tt0.s)) >= 300000); } var tb0 = $("#tmTest"); if (tb0) tb0.hidden = isTrain; renderTrack(); autoStop();
     var exWrap = $("#exWrap"), showBtn = $("#showEx"), tt1 = trState(), finished = !!(tt1 && tt1.e && (Date.parse(tt1.e) - Date.parse(tt1.s)) >= 300000);
-    exWrap.hidden = false; showBtn.hidden = true;
+    exWrap.hidden = !isTrain; showBtn.hidden = true;
     $("#tmAny").hidden = isTrain || finished;
     var tsE = todaySession(), hasE = !!(tsE && isRealSession(tsE)), openR = PLAN.filter(function(ex){ var e = todayEntry(ex.id); return e && !exDoneEntry(ex, e); }).length;
-    var eb = $("#tmEdit"); eb.hidden = !(finished && hasE);
+    var eb = $("#tmEdit"); eb.hidden = true;
     eb.textContent = openR ? "⭐ Heutiges Training bewerten (" + openR + " offen)" : "✎ Heutiges Training ansehen / ändern";
     eb.classList.toggle("todo", openR > 0);
     $("#exHead").textContent = isTrain ? "Heute · " + planName() + " · " + STRENGTH.length + " Übungen" : (sub ? sub + " · " : "") + planName();
@@ -2217,10 +2235,6 @@ body.tm .weekcard{display:none !important}
     var h = '<div class="khead"><h2>' + (L.id === todayId() ? "Heutiges Training" : "Letztes Training") + '</h2><span class="fm">' + dateShort(L.id) + '</span></div>';
     h += '<div class="vchips">' + (st.min ? '<span><b>' + hm(st.min).replace(/ (h|min)$/, "") + '</b> ' + (st.min >= 60 ? "h" : "min") + '</span>' : '') + '<span><b>' + st.ex + '</b> Übungen</span><span><b>' + st.sets + '</b> Sätze</span><span><b>' + Math.round(st.vol).toLocaleString("de-DE") + '</b> kg' + (vtr && vtr.cls !== "new" ? ' <em class="' + vtr.cls + '">' + vtr.tx + '</em>' : '') + '</span></div>';
     var allNew = rows.every(function(r){ return r.tr.cls === "new"; }), prs = rows.filter(function(r){ return r.tr.cls === "pr"; }).length;
-    h += '<p class="vsum">' + (allNew ? 'Erstes Training mit diesen Übungen. Ab dem nächsten Mal siehst du hier deine Steigerung.' : (ups + prs) ? '💪 Bei <b>' + (ups + prs) + ' von ' + rows.length + '</b> Übungen stärker als letztes Mal' + (prs ? ', davon <b>' + prs + ' Rekord' + (prs === 1 ? '' : 'e') + '</b> 🏆' : '') + '.' : 'Diesmal keine Steigerung. Halte das Gewicht und hol dir mehr Wiederholungen.') + '</p>';
-    h += '<ul class="vex">' + rows.map(function(r){
-      return '<li><div class="vn"><b>' + r.ex.name + '</b><span>' + repsLine(r.e) + '</span></div><span class="vt ' + r.tr.cls + '">' + r.tr.tx + '</span><div class="vnext ' + r.nt.cls + '">Nächstes Mal: <b>' + r.nt.tx + '</b></div></li>';
-    }).join("") + '</ul>';
     lt.innerHTML = h;
     // Progressive Overload je Übung
     var orows = ALLSTR.map(function(ex){
@@ -2229,27 +2243,24 @@ body.tm .weekcard{display:none !important}
       var tr = ss.length > 1 ? trend(last, first) : {cls:"new", tx:"1 Training"}, nt = nextTarget(ex, ss[ss.length - 1].entries[ex.id], ss[ss.length - 1].id);
       return {ex:ex, n:ss.length, vals:vals, tr:tr, nt:nt, top:firstKg(ss[ss.length - 1].entries[ex.id])};
     }).filter(Boolean);
-    ov.innerHTML = '<ul class="ovl">' + orows.map(function(r){
-      return '<li><div class="on"><b>' + r.ex.name + '</b><span>' + fmt(r.top) + ' kg · ' + r.n + (r.n === 1 ? ' Training' : ' Trainings') + '</span></div>' + spark(r.vals) + '<span class="vt ' + r.tr.cls + '">' + r.tr.tx + '</span><div class="vnext ' + r.nt.cls + '">Ziel: <b>' + r.nt.tx + '</b></div></li>';
-    }).join("") + '</ul>';
+    var cUp = orows.filter(function(r){ return r.tr.cls === "up" || r.tr.cls === "pr"; }).length, cSame = orows.filter(function(r){ return r.tr.cls === "same"; }).length, cDown = orows.filter(function(r){ return r.tr.cls === "down"; }).length, cNew = orows.filter(function(r){ return r.tr.cls === "new"; }).length;
+    var best = orows.filter(function(r){ return r.vals.length > 1; }).map(function(r){ return {n:r.ex.name, p:(r.vals[r.vals.length - 1] - r.vals[0]) / r.vals[0] * 100}; }).sort(function(a, b){ return b.p - a.p; })[0];
+    ov.innerHTML = '<div class="vchips big"><span class="up"><b>' + cUp + '</b> stärker</span><span><b>' + cSame + '</b> gleich</span><span class="down"><b>' + cDown + '</b> weniger</span>' + (cNew ? '<span><b>' + cNew + '</b> neu</span>' : '') + '</div>' + (best && best.p > 0.5 ? '<p class="vbest">Größter Sprung: <b>' + best.n + '</b> +' + f1(best.p) + ' %</p>' : '');
     $("#ovlMeta").textContent = "seit Start";
     // Alle Trainings
     wrap.innerHTML = "";
     var tf = foldEl("Alle Trainings", list.length + (list.length === 1 ? " Training" : " Trainings"));
     tf.el.classList.add("cardf");
     list.forEach(function(s){
-      var x = sessStats(s), box = document.createElement("div"); box.className = "vsess";
-      var hd = document.createElement("div"); hd.className = "vsh";
-      var a = document.createElement("b"); a.textContent = dateLong(s.id);
-      var b = document.createElement("span"); b.textContent = [x.ex + " Übungen", Math.round(x.vol).toLocaleString("de-DE") + " kg"].join(" · ");
-      hd.appendChild(a); hd.appendChild(b); box.appendChild(hd);
-      if (mode === "db" || mode === "local"){ var du = document.createElement("button"); du.type = "button"; du.className = "durb"; du.dataset.id = s.id; du.textContent = x.min ? "⏱ " + hm(x.min) + " · ändern" : "⏱ Dauer eintragen"; box.appendChild(du); }
-      var ul = document.createElement("ul"); ul.className = "vsl";
-      ALLSTR.forEach(function(ex){ if (!entryOk(ex, s)) return; var li = document.createElement("li"); var n = document.createElement("span"); n.textContent = ex.name; var v = document.createElement("span"); v.className = "vv"; v.textContent = repsLine(s.entries[ex.id]); li.appendChild(n); li.appendChild(v); ul.appendChild(li); });
-      box.appendChild(ul);
-      if (s.note){ var np = document.createElement("p"); np.className = "snote"; np.textContent = s.note; box.appendChild(np); }
-      if (mode === "db" || mode === "local"){ var del = document.createElement("button"); del.type = "button"; del.className = "del"; del.dataset.id = s.id; del.textContent = "Training löschen"; box.appendChild(del); }
-      tf.inner.appendChild(box);
+      var x = sessStats(s), row = document.createElement("div"); row.className = "vrow";
+      var a = document.createElement("b"); a.textContent = dateShort(s.id);
+      var b = document.createElement("span"); b.textContent = [x.min ? hm(x.min) : null, x.ex + " Übungen", Math.round(x.vol).toLocaleString("de-DE") + " kg"].filter(Boolean).join(" · ");
+      row.appendChild(a); row.appendChild(b);
+      if (mode === "db" || mode === "local"){
+        var du = document.createElement("button"); du.type = "button"; du.className = "durb ic"; du.dataset.id = s.id; du.textContent = "⏱"; du.setAttribute("aria-label", "Dauer ändern"); row.appendChild(du);
+        var del = document.createElement("button"); del.type = "button"; del.className = "del ic"; del.dataset.id = s.id; del.textContent = "🗑"; del.setAttribute("aria-label", "Training löschen"); row.appendChild(del);
+      }
+      tf.inner.appendChild(row);
     });
     wrap.appendChild(tf.el);
     renderDataBox();
@@ -2274,12 +2285,25 @@ body.tm .weekcard{display:none !important}
   function doSeedToday(){
     var id = todayId(), s0 = sessionById(id), cut = Date.parse("2026-11-26T20:30:00Z");
     var real = s0 && s0.entries && Object.keys(s0.entries).some(function(k){ var at = Date.parse(s0.entries[k] && s0.entries[k].at); return at && at >= cut; });
-    if (real) return;
+    if (real){
+      var fixed = {}, changed = false;
+      Object.keys(s0.entries).forEach(function(k){
+        var e = JSON.parse(JSON.stringify(s0.entries[k])), ex = BYID[k];
+        if (ex && ex.kind !== "time" && Array.isArray(e.sets)){
+          e.sets.forEach(function(z){ if (z && z.reps > 0 && !z.rating){ z.rating = "passt"; changed = true; } });
+          if (e.dropKg != null && e.dropReps > 0 && !e.dropRating){ e.dropRating = "passt"; changed = true; }
+          if (!e.rating){ e.rating = "passt"; changed = true; }
+        }
+        fixed[k] = e;
+      });
+      if (changed) saveSessionPatch({entries:fixed}, id).catch(function(){});
+      return;
+    }
     var at = "2026-11-26T21:31:00.000Z", entries = {};
     STRENGTH.forEach(function(ex){
       var sg = suggest(ex), sets = [];
-      for (var i = 0; i < ex.sets; i++) sets.push({kg:sg.sets[i], reps:sg.reps[i] != null ? sg.reps[i] : ex.pr[i], rating:""});
-      entries[ex.id] = {v:2, kg:sets[0].kg, sets:sets, dropKg: ex.drop ? sg.dropKg : null, dropReps: ex.drop ? (sg.dropReps != null ? sg.dropReps : ex.dropPr) : null, rating:"", dropRating:"", at:at};
+      for (var i = 0; i < ex.sets; i++) sets.push({kg:sg.sets[i], reps:sg.reps[i] != null ? sg.reps[i] : ex.pr[i], rating:"passt"});
+      entries[ex.id] = {v:2, kg:sets[0].kg, sets:sets, dropKg: ex.drop ? sg.dropKg : null, dropReps: ex.drop ? (sg.dropReps != null ? sg.dropReps : ex.dropPr) : null, rating:"passt", dropRating: ex.drop ? "passt" : "", at:at};
     });
     var end = Date.parse("2026-11-26T21:30:00.000Z");
     saveSessionPatch({entries:entries, tr:{s:new Date(end - 84 * 60000).toISOString(), e:new Date(end).toISOString(), t:0}}, id).catch(function(){});
@@ -3342,8 +3366,9 @@ body.tm .weekcard{display:none !important}
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "2.4", APP_BUILT = "2026-11-26T21:24:31Z";
+  var APP_VERSION = "2.5", APP_BUILT = "2026-11-26T21:36:03Z";
   var CHANGES = [
+    ["2.5", "Verlauf aufgeräumt, Ruhetag ohne Übungsliste"],
     ["2.4", "Bewertung pro Satz sichtbar und änderbar, Training nachträglich bewerten, Dauer im Verlauf ändern"],
     ["2.3", "Sonntags ein kurzer Satz zu deiner Woche"],
     ["2.2", "Wasser in Getränken (z. B. Whey mit 400 ml Wasser) zählt automatisch zum Wasser"],
@@ -4130,7 +4155,7 @@ body.tm .weekcard{display:none !important}
       var f = document.createElement("div"); f.className = "durf";
       var inp = document.createElement("input"); inp.inputMode = "numeric"; inp.placeholder = "z. B. 1:24"; inp.value = cur ? Math.floor(cur / 60) + ":" + pad(cur % 60) : ""; inp.setAttribute("aria-label", "Dauer (Stunden:Minuten)");
       var ok = document.createElement("button"); ok.type = "button"; ok.className = "btn primary"; ok.textContent = "Speichern";
-      f.appendChild(inp); f.appendChild(ok); du.replaceWith(f); inp.focus();
+      f.appendChild(inp); f.appendChild(ok); var old = du.closest(".vrow").nextElementSibling; if (old && old.classList.contains("durf")) old.remove(); du.closest(".vrow").after(f); inp.focus();
       ok.addEventListener("click", function(){
         var min = parseDur(inp.value); if (!min || min < 1 || min > 600){ toast("Dauer eingeben, z. B. 1:24"); inp.focus(); return; }
         var id = du.dataset.id, ss = sessionById(id), e = ss && ss.tr && ss.tr.e ? Date.parse(ss.tr.e) : dateOf(id).getTime() + 20 * 3600000;
@@ -4140,9 +4165,9 @@ body.tm .weekcard{display:none !important}
     }
     var b = ev.target.closest(".del"); if (!b) return;
     if (!b.classList.contains("confirm")){
-      $$(".del.confirm").forEach(function(x){ x.classList.remove("confirm"); x.textContent = "Training löschen"; });
-      b.classList.add("confirm"); b.textContent = "Wirklich löschen? Nochmal tippen";
-      clearTimeout(delTimer); delTimer = setTimeout(function(){ b.classList.remove("confirm"); b.textContent = "Training löschen"; }, 4000);
+      $$(".del.confirm").forEach(function(x){ x.classList.remove("confirm"); x.textContent = x.classList.contains("ic") ? "🗑" : "Training löschen"; });
+      b.classList.add("confirm"); b.textContent = b.classList.contains("ic") ? "Löschen?" : "Wirklich löschen? Nochmal tippen";
+      clearTimeout(delTimer); delTimer = setTimeout(function(){ b.classList.remove("confirm"); b.textContent = b.classList.contains("ic") ? "🗑" : "Training löschen"; }, 4000);
       return;
     }
     clearTimeout(delTimer);
