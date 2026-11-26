@@ -1187,6 +1187,10 @@ body.tm .bodyrow .body{max-height:124px !important}
 .tdn{font-size:13px;color:var(--muted);margin:6px 0 0}
 body.tm .view[data-name="training"]{padding-top:calc(env(safe-area-inset-top,0px) + 92px) !important}
 body.tm .ex-head{padding-top:8px !important}
+body:not(.tm) #exlist .ex-head{pointer-events:none;cursor:default}
+body:not(.tm) #exlist .ex-state{display:none}
+body:not(.tm) #exlist .ex-body{display:none !important}
+body:not(.tm) #exlist .ex.done .ex-head{opacity:1}
 </style>
 </head>
 <body>
@@ -1268,7 +1272,7 @@ body.tm .ex-head{padding-top:8px !important}
       </div>
       <p class="wksum yest" id="wkYest"></p>
       <p class="wksum" id="wkSum"></p>
-      <p class="chl">Eiweiß pro Tag · Linie = 150 g · Tippen für Details</p>
+      <p class="chl">Eiweiß pro Tag · Linie = 150 g</p>
       <div class="chart"><div class="goal" id="wkGoal"></div><div class="bars" id="wkChart"></div></div>
     </div>
 
@@ -1279,7 +1283,7 @@ body.tm .ex-head{padding-top:8px !important}
       <div id="ovl"></div>
     </div>
 
-    <details class="cardf">
+    <details class="cardf" hidden style="display:none">
       <summary><span class="ft">Tage im Detail</span><span class="fm" id="tageMeta"></span></summary>
       <div class="cin"><ul class="days2" id="daysList"></ul></div>
     </details>
@@ -2086,6 +2090,16 @@ body.tm .ex-head{padding-top:8px !important}
     });
     wrap.appendChild(tf.el);
     renderDataBox();
+  }
+  var purged = false;
+  function purgeTests(){
+    if (purged || todayId() > "2026-11-27") return; purged = true;
+    try { if (!localStorage.getItem("purge-1")){ ["fit-fin", "fit-done", "fit-draft", "fit-tm", "fit-open", "fit-timer"].forEach(function(k){ localStorage.removeItem(k); }); localStorage.setItem("purge-1", "1"); } } catch (e) {}
+    var id = "2026-11-26", s0 = sessionById(id); if (!s0) return;
+    var cut = Date.parse("2026-11-26T20:30:00Z"), ent = s0.entries || {}, keep = {}, changed = false;
+    Object.keys(ent).forEach(function(k){ var at = ent[k] && Date.parse(ent[k].at); if (at && at < cut) changed = true; else keep[k] = ent[k]; });
+    var trOld = s0.tr && Date.parse(s0.tr.s) < cut;
+    if (changed || trOld) saveSessionPatch({entries:keep, tr: trOld ? null : s0.tr}, id).catch(function(){});
   }
   function renderTraining(){ PLAN.forEach(refreshRow); renderDay(); renderHistory(); renderNote(); renderBW(); }
 
@@ -3157,7 +3171,7 @@ body.tm .ex-head{padding-top:8px !important}
     var o = loadLocal(LKEY), f = loadLocal(FKEY), w = loadLocal(WKEY);
     if (o === null){ mode = "readonly"; setBanner("Speichern ist hier nicht verfügbar. Öffne die Seite in Claude, um einzutragen."); }
     else { mode = "local"; sessions = sessionsFromLocal(o); foodDays = f ? foodFromLocal(f) : []; waterDays = w ? waterFromLocal(w) : []; updateSyncBanner(); }
-    updateSyncBanner(); readyResolve(); renderTraining(); renderFood(); renderWater();
+    updateSyncBanner(); readyResolve(); renderTraining(); renderFood(); renderWater(); if (mode === "local") purgeTests();
   }
   var unsubT = null, unsubF = null;
   function subscribeTraining(){
@@ -3168,7 +3182,7 @@ body.tm .ex-head{padding-top:8px !important}
       });
       known = {}; sessions.forEach(function(s){ known[s.id] = true; });
       firstSync.tr = true; updateSyncBanner();
-      renderTraining();
+      renderTraining(); purgeTests();
     }, function(err){
       if (err && (err.code === "unavailable" || err.code === "deadline-exceeded" || err.code === "aborted")){ setTimeout(subscribeTraining, 3000); return; }
       firstSync.tr = true; updateSyncBanner();
