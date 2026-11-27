@@ -41,18 +41,18 @@
   var BYID = {}; CATALOG.forEach(function(e){ BYID[e.id] = e; });
   var ALLSTR = CATALOG.filter(function(e){ return e.kind !== "time"; });
   var PLAN = [], STRENGTH = [];
-  var PAIR = {seitheben:"reverse_fly", reverse_fly:"seitheben"};
+  var PAIR = {seitheben:"reverse_fly", reverse_fly:"seitheben", waden:"reverse", reverse:"waden"};
   // Reihenfolge für maximales Wachstum: große Grundübungen zuerst (frisch, schwer), dann Isolation mit Dropsätzen, Arme und Waden zum Schluss.
   // Dropsätze nur bei Maschinen-/Isolationsübungen, direkt nach dem letzten Satz ohne Pause.
   var PLANS = {
-    full:["beinpresse","beinbeuger","brustpresse","latzug","rudern","butterfly","seitheben","reverse_fly","preacher","trizeps_oh","rope","waden"],
-    fullA:["beinpresse","beinbeuger","brustpresse","latzug","seitheben","reverse_fly","preacher","rope","waden"],
+    full:["beinpresse","beinbeuger","brustpresse","latzug","rudern","butterfly","seitheben","reverse_fly","hammer","trizeps_oh","rope","waden","reverse"],
+    fullA:["beinpresse","beinbeuger","brustpresse","latzug","seitheben","reverse_fly","hammer","rope","waden","reverse"],
     fullB:["beinbeuger","beinstrecker","schulterpresse","rudern","butterfly","seitheben","reverse_fly","hammer","trizeps_oh","bauch"],
-    fullC:["beinpresse","brustpresse","latzug","rudern","seitheben","reverse_fly","preacher","rope","waden"],
+    fullC:["beinpresse","brustpresse","latzug","rudern","seitheben","reverse_fly","preacher","rope","waden","reverse"],
     upper:["brustpresse","latzug","schulterpresse","rudern","butterfly","seitheben","reverse_fly","preacher","rope"],
-    lower:["beinpresse","beinbeuger","beinstrecker","waden","bauch"],
+    lower:["beinpresse","beinbeuger","beinstrecker","bauch","waden","reverse"],
     push:["brustpresse","schulterpresse","butterfly","seitheben","trizeps_oh","rope"],
-    pull:["latzug","rudern","reverse_fly","preacher","hammer"],
+    pull:["latzug","rudern","reverse_fly","preacher","hammer","reverse"],
     legs:["beinpresse","beinbeuger","beinstrecker","waden","bauch"]
   };
 
@@ -1823,8 +1823,9 @@
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "3.0", APP_BUILT = "2026-11-27T07:53:54Z";
+  var APP_VERSION = "3.1", APP_BUILT = "2026-11-27T07:59:21Z";
   var CHANGES = [
+    ["3.1", "Unterarme: Hammer Curls mit Drop statt Preacher, Reverse Curls als Superset mit Waden"],
     ["3.0", "Neuer Plan für mehr Wachstum: Beinbeuger dazu, Dropsätze bei Isolationsübungen, sinnvolle Reihenfolge. Alte Daten (29.10.–02.11.) übernommen."],
     ["2.9", "Wiegen dienstags vor dem Training, Steigerung zählt ab dem nächsten Training, Tageswert entfernt"],
     ["2.8", "Verlauf: klareres Diagramm, Trainingstage markiert, Alle Trainings entfernt"],
