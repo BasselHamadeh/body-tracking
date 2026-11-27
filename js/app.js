@@ -36,25 +36,44 @@
     {id:"beinpresse", name:"Beinpresse", sets:4, reps:[10,15], pr:[12,10,10,10], rest:150, restText:"2½ min", kg:160, step:10},
     {id:"beinstrecker", name:"Beinstrecker", sets:2, reps:[10,15], pr:[12,10], drop:true, dropPr:8, rest:90, restText:"90 s", kg:70, dropKg:50, step:5},
     {id:"waden", name:"Waden", sets:2, reps:[12,20], pr:[15,12], drop:true, dropPr:10, rest:60, restText:"60 s", kg:45, dropKg:30, step:5},
+    {id:"kniebeuge", name:"Kniebeuge (Smith)", sets:3, reps:[8,12], pr:[10,9,8], rest:150, restText:"2½ min", kg:40, step:5},
+    {id:"rdl", name:"Rumänisches Kreuzheben", note:"Kurzhanteln, Gewicht pro Hand", sets:3, reps:[8,12], pr:[10,10,8], rest:120, restText:"2 min", kg:20, step:2},
+    {id:"hipthrust", name:"Hip Thrust Maschine", sets:3, reps:[8,12], pr:[12,10,10], rest:120, restText:"2 min", kg:60, step:10},
+    {id:"adduktoren", name:"Adduktoren Maschine", sets:2, reps:[12,15], pr:[15,12], drop:true, dropPr:10, rest:75, restText:"75 s", kg:40, dropKg:30, step:5},
+    {id:"brustpresse_m", name:"Brustpresse Maschine", sets:3, reps:[8,12], pr:[10,9,8], rest:120, restText:"2 min", kg:50, step:5},
+    {id:"kabelrudern", name:"Kabelrudern eng", sets:3, reps:[10,12], pr:[12,10,10], rest:90, restText:"90 s", kg:50, step:5},
+    {id:"facepull", name:"Face Pulls", sets:2, reps:[12,20], pr:[15,12], drop:true, dropPr:10, rest:60, restText:"60 s", kg:20, dropKg:15, step:2.5},
     {id:"rennen", name:"Rennen", kind:"time", min:10, target:"10 min"}
   ];
   var BYID = {}; CATALOG.forEach(function(e){ BYID[e.id] = e; });
   var ALLSTR = CATALOG.filter(function(e){ return e.kind !== "time"; });
   var PLAN = [], STRENGTH = [];
-  var PAIR = {seitheben:"reverse_fly", reverse_fly:"seitheben", waden:"reverse", reverse:"waden"};
+  var PAIR = {seitheben:"reverse_fly", reverse_fly:"seitheben", waden:"reverse", reverse:"waden", hammer:"trizeps_oh", trizeps_oh:"hammer"};
   // Reihenfolge für maximales Wachstum: große Grundübungen zuerst (frisch, schwer), dann Isolation mit Dropsätzen, Arme und Waden zum Schluss.
   // Dropsätze nur bei Maschinen-/Isolationsübungen, direkt nach dem letzten Satz ohne Pause.
   var PLANS = {
-    full:["beinpresse","beinbeuger","brustpresse","latzug","rudern","butterfly","seitheben","reverse_fly","hammer","rope","waden","reverse"],
-    fullA:["beinpresse","beinbeuger","brustpresse","latzug","seitheben","reverse_fly","hammer","rope","waden","reverse"],
-    fullB:["beinbeuger","beinstrecker","schulterpresse","rudern","butterfly","seitheben","reverse_fly","hammer","trizeps_oh","bauch"],
-    fullC:["beinpresse","brustpresse","latzug","rudern","seitheben","reverse_fly","preacher","rope","waden","reverse"],
-    upper:["brustpresse","latzug","schulterpresse","rudern","butterfly","seitheben","reverse_fly","preacher","rope"],
-    lower:["beinpresse","beinbeuger","beinstrecker","bauch","waden","reverse"],
-    push:["brustpresse","schulterpresse","butterfly","seitheben","trizeps_oh","rope"],
-    pull:["latzug","rudern","reverse_fly","preacher","hammer","reverse"],
-    legs:["beinpresse","beinbeuger","beinstrecker","waden","bauch"]
+    // 1–2 Tage: Ganzkörper (Supersätze sparen Zeit)
+    full:["beinpresse","beinbeuger","brustpresse","latzug","rudern","seitheben","reverse_fly","hammer","trizeps_oh","rope","waden","reverse"],
+    // 3 Tage: Ganzkörper A/B/C
+    fullA:["kniebeuge","beinbeuger","brustpresse","latzug","butterfly","seitheben","reverse_fly","hammer","trizeps_oh","waden","reverse"],
+    fullB:["rdl","beinstrecker","schulterpresse","kabelrudern","brustpresse_m","facepull","preacher","rope","bauch"],
+    fullC:["beinpresse","hipthrust","brustpresse_m","latzug","rudern","seitheben","reverse_fly","hammer","trizeps_oh","waden","reverse"],
+    // 4 Tage: Oberkörper/Unterkörper je 2×
+    upperA:["brustpresse","latzug","schulterpresse","rudern","butterfly","seitheben","reverse_fly","hammer","trizeps_oh","rope"],
+    lowerA:["kniebeuge","rdl","hipthrust","beinstrecker","beinbeuger","adduktoren","waden","reverse","bauch"],
+    upperB:["brustpresse_m","kabelrudern","latzug","schulterpresse","butterfly","facepull","seitheben","preacher","rope","reverse"],
+    lowerB:["beinpresse","hipthrust","beinbeuger","beinstrecker","adduktoren","rdl","waden","bauch"],
+    // 5–6 Tage: Push/Pull/Beine
+    push:["brustpresse","schulterpresse","brustpresse_m","butterfly","seitheben","trizeps_oh","rope","waden","bauch"],
+    pull:["latzug","rudern","kabelrudern","facepull","reverse_fly","preacher","hammer","waden","reverse","bauch"],
+    legs:["kniebeuge","rdl","beinpresse","beinbeuger","beinstrecker","waden","bauch"],
+    pushB:["brustpresse_m","schulterpresse","brustpresse","butterfly","seitheben","facepull","trizeps_oh","rope","bauch"],
+    pullB:["kabelrudern","latzug","rudern","reverse_fly","hammer","preacher","trizeps_oh","waden","reverse","bauch"],
+    legsB:["beinpresse","hipthrust","beinbeuger","adduktoren","beinstrecker","rdl","bauch"]
   };
+  var SPLIT = {3:["fullA","fullB","fullC"], 4:["upperA","lowerA","upperB","lowerB"], 5:["upperA","lowerA","push","pull","legs"], 6:["push","pull","legs","pushB","pullB","legsB"], 7:["push","pull","legs","pushB","pullB","legsB","upperA"]};
+  var PLAN_NAMES = {full:"Ganzkörper", fullA:"Ganzkörper A", fullB:"Ganzkörper B", fullC:"Ganzkörper C", upperA:"Oberkörper A", lowerA:"Unterkörper A", upperB:"Oberkörper B", lowerB:"Unterkörper B", push:"Push (Brust, Schulter, Trizeps)", pull:"Pull (Rücken, Bizeps)", legs:"Beine", pushB:"Push B", pullB:"Pull B", legsB:"Beine B"};
+
 
   function dOrd(d){ return (d + 6) % 7; }
   function planList(wdDay){
@@ -62,7 +81,7 @@
     if (n >= 3){
       var sorted = TRAIN_DAYS.slice().sort(function(a, b){ return dOrd(a) - dOrd(b); }), i = sorted.indexOf(wdDay);
       if (i < 0){ var bd = 8; sorted.forEach(function(d, k){ var diff = (d - wdDay + 7) % 7 || 7; if (diff < bd){ bd = diff; i = k; } }); }
-      key = n === 3 ? ["fullA", "fullB", "fullC"][i] : (i % 2 === 0 ? "upper" : "lower");
+      key = (SPLIT[Math.min(n, 7)] || SPLIT[7])[i] || "full";
     }
     return PLANS[key].map(function(id){ return BYID[id]; });
   }
@@ -271,7 +290,14 @@
     butterfly:{p:["chest_u", "chest_l"], s:["delts_f"]},
     beinpresse:{p:["quads"], s:["glutes", "adductors", "hams"]},
     beinstrecker:{p:["quads"], s:[]},
-    waden:{p:["calves"], s:[]}
+    waden:{p:["calves"], s:[]},
+    kniebeuge:{p:["quads", "glutes"], s:["adductors", "hams", "lower_back"]},
+    rdl:{p:["hams", "glutes"], s:["lower_back", "forearm_f"]},
+    hipthrust:{p:["glutes"], s:["hams"]},
+    adduktoren:{p:["adductors"], s:[]},
+    brustpresse_m:{p:["chest_l", "chest_u"], s:["delts_f", "triceps"]},
+    kabelrudern:{p:["lats", "traps_m"], s:["biceps", "delts_b", "brach"]},
+    facepull:{p:["delts_b", "traps_m"], s:["traps_u"]}
   };
   var MNAMES = {chest_u:"Obere Brust", chest_l:"Untere Brust", delts_f:"Vordere Schulter", delts_s:"Seitliche Schulter", delts_b:"Hintere Schulter",
     biceps:"Bizeps", brach:"Brachialis", brachiorad:"Brachioradialis", forearm_f:"Unterarm-Beuger", forearm_e:"Unterarm-Strecker",
@@ -376,14 +402,16 @@
     return o + '</g>';
   }
   var VIEW = {
+    kniebeuge:{f:"f", w:50, y0:96, y1:156}, rdl:{f:"b", w:50, y0:94, y1:156}, hipthrust:{f:"b", w:50, y0:92, y1:150}, adduktoren:{f:"f", w:50, y0:100, y1:156},
+    brustpresse_m:{f:"f", w:84, y0:22, y1:72}, kabelrudern:{f:"b", y0:22, y1:100}, facepull:{f:"b", w:92, y0:20, y1:74},
     latzug:{f:"b", y0:22, y1:100}, rudern:{f:"b", y0:22, y1:100}, seitheben:{f:"f", w:92, y0:20, y1:74},
     preacher:{f:"f", y0:30, y1:110}, trizeps_oh:{f:"b", y0:30, y1:110}, hammer:{f:"f", y0:30, y1:110},
     rope:{f:"b", y0:30, y1:110}, reverse:{f:"f", y0:46, y1:110}, butterfly:{f:"f", w:84, y0:22, y1:72},
     beinstrecker:{f:"f", w:50, y0:100, y1:156}, waden:{f:"b", w:44, y0:146, y1:206}, bauch:{f:"f", w:46, y0:52, y1:104},
     brustpresse:{f:"f", w:84, y0:22, y1:72}, schulterpresse:{f:"f", w:92, y0:20, y1:74}, beinbeuger:{f:"b", w:50, y0:98, y1:156}, reverse_fly:{f:"b", w:92, y0:20, y1:74}, beinpresse:{f:"f", w:50, y0:98, y1:156}
   };
-  function planName(){ for (var k in PLANS){ if (PLANS[k].join() === PLAN.map(function(e){ return e.id; }).join()) return {full:"Ganzkörper", fullA:"Ganzkörper A", fullB:"Ganzkörper B", fullC:"Ganzkörper C", upper:"Oberkörper", lower:"Unterkörper", push:"Push", pull:"Pull", legs:"Beine"}[k]; } return "Training"; }
-  function estMin(){ var sec = 0; STRENGTH.forEach(function(ex){ sec += ex.sets * (45 + ex.rest) + (ex.drop ? 45 : 0); }); return Math.round(sec / 300) * 5; }
+  function planName(){ var ids = PLAN.map(function(e){ return e.id; }).join(); for (var k in PLANS){ if (PLANS[k].join() === ids) return PLAN_NAMES[k] || "Training"; } return "Training"; }
+  function estMin(){ var sec = 0; STRENGTH.forEach(function(ex){ sec += ex.sets * (45 + (partnerOf(ex) ? ex.rest / 2 : ex.rest)) + (ex.drop ? 45 : 0); }); return Math.round(sec * 1.12 / 300) * 5; }
   function uniqNames(keys){ var out = []; keys.forEach(function(k){ var n = MNAMES[k]; if (n && out.indexOf(n) < 0) out.push(n); }); return out; }
   function renderFocus(){
     var c = $("#focusCard"); if (!c) return;
@@ -1570,7 +1598,7 @@
   });
 
   // ---------- Tagesbewertung ----------
-  var GROUPS = [["Rücken", ["latzug", "rudern"]], ["Schulter", ["seitheben", "reverse_fly"]], ["Arme", ["preacher", "trizeps_oh", "hammer", "rope", "reverse"]], ["Brust", ["butterfly", "brustpresse"]], ["Beine", ["beinstrecker", "waden", "beinpresse"]]];
+  var GROUPS = [["Rücken", ["latzug", "rudern", "kabelrudern"]], ["Schulter", ["seitheben", "reverse_fly", "schulterpresse", "facepull"]], ["Arme", ["preacher", "trizeps_oh", "hammer", "rope", "reverse"]], ["Brust", ["butterfly", "brustpresse", "brustpresse_m"]], ["Beine", ["beinstrecker", "waden", "beinpresse", "beinbeuger", "kniebeuge", "rdl", "hipthrust", "adduktoren"]]];
   function prevKg(exId, beforeId){
     for (var i = 0; i < sessions.length; i++){
       var s = sessions[i]; if (s.id >= beforeId || !isTrainId(s.id)) continue;
@@ -1837,8 +1865,9 @@
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "3.3", APP_BUILT = "2026-11-27T08:09:57Z";
+  var APP_VERSION = "3.4", APP_BUILT = "2026-11-27T08:17:20Z";
   var CHANGES = [
+    ["3.4", "Trainingsplan passt sich an die Anzahl Trainingstage an (2–6), neue Übungen, Trizeps über Kopf zurück (Superset mit Hammer Curls)"],
     ["3.3", "Trizeps über Kopf raus (Zeit), Details zu Übungen und Werten aufklappbar"],
     ["3.2", "Aufbau-Tag nach dem Training markiert, Heute im Diagramm ab 18 Uhr, Übungen am Ruhetag aufklappbar"],
     ["3.1", "Unterarme: Hammer Curls mit Drop statt Preacher, Reverse Curls als Superset mit Waden"],
