@@ -237,7 +237,7 @@
     var res = {sets:outK, reps:outR, dropKg:nk, dropReps:nr, delta: first === "w" ? ex.step : (first === "d" ? -ex.step : 0), repDelta: repInc};
     res.reason = first === "w" ? "Ziel erreicht, also mehr Gewicht" : first === "d" ? "War zu schwer, also etwas leichter" : repInc > 0 ? "Gleiches Gewicht, mehr Wiederholungen" : "Gewicht halten, sauber ausführen";
     if (first !== "w"){
-      var upto = le.date || todayId(), hist = sessions.filter(function(s){ return s.id <= upto && isRealSession(s) && entryOk(ex, s); }).slice(0, 3);
+      var upto = le.date || todayId(), hist = sessions.filter(function(s){ return s.id <= upto && s.id >= OVL_FROM && isRealSession(s) && entryOk(ex, s); }).slice(0, 3);
       if (hist.length === 3){
         var hv = hist.map(function(s){ return bestE1(s.entries[ex.id]); });
         if (hv[0] <= hv[2] * 1.005){
@@ -562,7 +562,8 @@
     $(".ring").hidden = !isTrain; $("#segbar").hidden = !isTrain; $(".legend").hidden = !isTrain; $("#ttrack").hidden = !isTrain; var sb0 = $("#tmStart"); if (sb0){ var tt0 = trState(); sb0.hidden = !isTrain || !!(tt0 && tt0.e && (Date.parse(tt0.e) - Date.parse(tt0.s)) >= 300000); } var tb0 = $("#tmTest"); if (tb0) tb0.hidden = isTrain; renderTrack(); autoStop();
     var exWrap = $("#exWrap"), showBtn = $("#showEx"), tt1 = trState(), finished = !!(tt1 && tt1.e && (Date.parse(tt1.e) - Date.parse(tt1.s)) >= 300000);
     exWrap.hidden = !isTrain; showBtn.hidden = true;
-    $("#tmAny").hidden = isTrain || finished;
+    $("#tmAny").hidden = true;
+    var wc = $("#weighCard"); if (wc){ var bl = sessions.filter(function(x){ return x.bw > 0 && x.id <= todayId(); }).sort(function(a, b){ return a.id < b.id ? 1 : -1; }); wc.hidden = !(new Date().getDay() === WEIGH_DAY && (!bl.length || weighDue(bl[0].id)) && !document.body.classList.contains("tm")); }
     var tsE = todaySession(), hasE = !!(tsE && isRealSession(tsE)), openR = PLAN.filter(function(ex){ var e = todayEntry(ex.id); return e && !exDoneEntry(ex, e); }).length;
     var eb = $("#tmEdit"); eb.hidden = true;
     eb.textContent = openR ? "⭐ Heutiges Training bewerten (" + openR + " offen)" : "✎ Heutiges Training ansehen / ändern";
@@ -620,12 +621,14 @@
     var d = vals.map(function(v, i){ return (i ? "L" : "M") + (i / (vals.length - 1) * 100).toFixed(1) + "," + (3 + (1 - (v - mn) / rg) * 20).toFixed(1); }).join(" ");
     return '<svg class="osp" viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true"><path d="' + d + '"/></svg>';
   }
+  // Steigerung wird erst ab dem ersten "richtigen" Training verglichen
+  var OVL_FROM = "2026-12-01";
   function exRowsFor(s, list){
     return ALLSTR.filter(function(ex){ return entryOk(ex, s); }).map(function(ex){
       var e = s.entries[ex.id], prev = null;
-      for (var i = 0; i < list.length; i++){ if (list[i].id < s.id && entryOk(ex, list[i])){ prev = list[i].entries[ex.id]; break; } }
+      if (s.id >= OVL_FROM) for (var i = 0; i < list.length; i++){ if (list[i].id < s.id && list[i].id >= OVL_FROM && entryOk(ex, list[i])){ prev = list[i].entries[ex.id]; break; } }
       var cur = bestE1(e), tr = trend(cur, prev ? bestE1(prev) : 0), nt = nextTarget(ex, e, s.id), mx = 0;
-      list.forEach(function(o){ if (o.id < s.id && entryOk(ex, o)) mx = Math.max(mx, bestE1(o.entries[ex.id])); });
+      list.forEach(function(o){ if (s.id >= OVL_FROM && o.id < s.id && o.id >= OVL_FROM && entryOk(ex, o)) mx = Math.max(mx, bestE1(o.entries[ex.id])); });
       if (mx && cur > mx * 1.005) tr = {cls:"pr", tx:"🏆 Rekord"};
       return {ex:ex, e:e, tr:tr, nt:nt};
     });
@@ -640,7 +643,7 @@
       ov.innerHTML = '<p class="empty">Nach dem ersten Training siehst du hier deine Steigerung.</p>'; wrap.innerHTML = ""; return;
     }
     // Letztes Training
-    var L = list[0], st = sessStats(L), prevS = list[1] ? sessStats(list[1]) : null, rows = exRowsFor(L, list);
+    var L = list[0], st = sessStats(L), prevS = list[1] && L.id >= OVL_FROM && list[1].id >= OVL_FROM ? sessStats(list[1]) : null, rows = exRowsFor(L, list);
     var vtr = prevS && prevS.vol ? trend(st.vol, prevS.vol) : null;
     var ups = rows.filter(function(r){ return r.tr.cls === "up"; }).length;
     var h = '<div class="khead"><h2>' + (L.id === todayId() ? "Heutiges Training" : "Letztes Training") + '</h2><span class="fm">' + dateShort(L.id) + '</span></div>';
@@ -649,15 +652,18 @@
     lt.innerHTML = h;
     // Progressive Overload je Übung
     var orows = ALLSTR.map(function(ex){
-      var ss = list.filter(function(s){ return entryOk(ex, s); }).slice(0, 8).reverse(); if (!ss.length) return null;
+      var ss = list.filter(function(s){ return s.id >= OVL_FROM && entryOk(ex, s); }).slice(0, 8).reverse(); if (!ss.length) return null;
       var vals = ss.map(function(s){ return bestE1(s.entries[ex.id]); }), first = vals[0], last = vals[vals.length - 1];
       var tr = ss.length > 1 ? trend(last, first) : {cls:"new", tx:"1 Training"}, nt = nextTarget(ex, ss[ss.length - 1].entries[ex.id], ss[ss.length - 1].id);
       return {ex:ex, n:ss.length, vals:vals, tr:tr, nt:nt, top:firstKg(ss[ss.length - 1].entries[ex.id])};
     }).filter(Boolean);
+    if (!orows.length){ ov.innerHTML = '<p class="empty">Zählt ab deinem nächsten Training. Dann siehst du hier, bei wie vielen Übungen du stärker wirst.</p>'; $("#ovlMeta").textContent = ""; }
+    else {
     var cUp = orows.filter(function(r){ return r.tr.cls === "up" || r.tr.cls === "pr"; }).length, cSame = orows.filter(function(r){ return r.tr.cls === "same"; }).length, cDown = orows.filter(function(r){ return r.tr.cls === "down"; }).length, cNew = orows.filter(function(r){ return r.tr.cls === "new"; }).length;
     var best = orows.filter(function(r){ return r.vals.length > 1; }).map(function(r){ return {n:r.ex.name, p:(r.vals[r.vals.length - 1] - r.vals[0]) / r.vals[0] * 100}; }).sort(function(a, b){ return b.p - a.p; })[0];
     ov.innerHTML = '<div class="vchips big"><span class="up"><b>' + cUp + '</b> stärker</span><span><b>' + cSame + '</b> gleich</span><span class="down"><b>' + cDown + '</b> weniger</span>' + (cNew ? '<span><b>' + cNew + '</b> neu</span>' : '') + '</div>' + (best && best.p > 0.5 ? '<p class="vbest">Größter Sprung: <b>' + best.n + '</b> +' + f1(best.p) + ' %</p>' : '');
-    $("#ovlMeta").textContent = "seit Start";
+    $("#ovlMeta").textContent = "seit " + dateShort(OVL_FROM);
+    }
     wrap.innerHTML = "";
     if (true){ renderDataBox(); return; }
     var tf = foldEl("Alle Trainings", list.length + (list.length === 1 ? " Training" : " Trainings"));
@@ -820,7 +826,9 @@
       });
     });
   }
-  function weighDue(lastId){ var d = dateOf(todayId()), back = (d.getDay() + 2) % 7, fri = new Date(d.getFullYear(), d.getMonth(), d.getDate() - back); return dateOf(lastId) < fri; }
+  // Wiegen einmal pro Woche: dienstags vor dem Training
+  var WEIGH_DAY = 2;
+  function weighDue(lastId){ var d = dateOf(todayId()), back = (d.getDay() - WEIGH_DAY + 7) % 7, wd = new Date(d.getFullYear(), d.getMonth(), d.getDate() - back); return dateOf(lastId) < wd; }
   function cleanTr(v){ /* t:1 marks a test session that never counts */ if (!v || typeof v !== "object") return null; var a = typeof v.s === "string" && !isNaN(Date.parse(v.s)) ? v.s : null, b = typeof v.e === "string" && !isNaN(Date.parse(v.e)) ? v.e : null; return a ? {s:a, e:b, t:v.t ? 1 : 0} : null; }
   function trState(){ var ses = todaySession(); return ses && ses.tr ? ses.tr : null; }
   function dur(ms){ var t = Math.max(0, Math.round(ms / 1000)), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), sc = t % 60; return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(sc).padStart(2, "0"); }
@@ -870,6 +878,11 @@
     var due = !list.length || weighDue(list[0].id);
     $("#bwMeta").textContent = list.length ? fmt(list[0].bw) + " kg" + (due ? ", wiegen fällig" : "") : "Noch nichts";
   }
+  $("#wqSave").addEventListener("click", function(){
+    var v = num($("#wqIn").value);
+    if (v === null || v < 30 || v > 250){ toast("Gewicht in kg eintragen, z. B. 82,5."); $("#wqIn").focus(); return; }
+    saveSessionPatch({bw: Math.round(v * 10) / 10}).then(function(){ $("#wqIn").value = ""; toast("Gewicht gespeichert"); renderBW(); renderDay(); }).catch(function(e){ toast(errText(e)); });
+  });
   $("#bwSave").addEventListener("click", function(){
     var v = num($("#bwIn").value);
     if (v === null || v < 30 || v > 250){ toast("Gewicht in kg eintragen, z. B. 82,5."); $("#bwIn").focus(); return; }
@@ -1663,7 +1676,7 @@
     box.innerHTML = tile("Kalorien", t.kcal.toLocaleString("de-DE"), t.kcal / GOAL_KCAL * 100) + tile("Eiweiß", t.prot + " g", t.prot / GOAL_PROT * 100, "p") + tile("Wasser", liters(t.ml), t.ml / wg * 100, "w") + tile("Schlaf", t.sl ? hrs(t.sl.min) : "–", t.sl ? sleepScore(t.sl.min) * 10 : 0, "s");
     var ts = todaySession(), done = PLAN.filter(function(ex){ return exDoneEntry(ex, todayEntry(ex.id)); }).length, any = ts && isRealSession(ts);
     var line = t.isTrain || any ? (done >= PLAN.length ? "💪 Training komplett" : any ? "🏋️ Training: " + done + " von " + PLAN.length + " Übungen" : "🏋️ Training noch offen") : "😌 Ruhetag";
-    $("#todayLine").textContent = line + " · Tageswert bisher " + f1(t.score) + "/10";
+    $("#todayLine").textContent = line;
     $("#tdMeta2").textContent = dateOf(todayId()).toLocaleDateString("de-DE", {weekday:"long", day:"numeric", month:"long"});
   }
   function renderScores(){
@@ -1778,8 +1791,9 @@
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "2.8", APP_BUILT = "2026-11-26T21:45:17Z";
+  var APP_VERSION = "2.9", APP_BUILT = "2026-11-27T07:47:44Z";
   var CHANGES = [
+    ["2.9", "Wiegen dienstags vor dem Training, Steigerung zählt ab dem nächsten Training, Tageswert entfernt"],
     ["2.8", "Verlauf: klareres Diagramm, Trainingstage markiert, Alle Trainings entfernt"],
     ["2.7", "Erledigte Übungen ausgegraut, Erholungs-Karte entfernt"],
     ["2.6", "Ruhetag ohne Tipps"],
