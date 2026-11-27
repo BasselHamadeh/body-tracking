@@ -1352,3 +1352,8 @@ body:not(.tm) #exlist .ex.done .ex-state{display:block !important}
 .vdet>summary::-webkit-details-marker{display:none}
 .vdet>summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--blue);border-bottom:2px solid var(--blue);transform:translateY(-2px) rotate(45deg)}
 .vdet[open]>summary::after{transform:translateY(2px) rotate(-135deg)}
+
+.lockrow{display:flex;gap:12px;align-items:flex-start;margin-top:16px;padding:12px 14px;border-radius:14px;background:var(--card2, rgba(127,127,127,.08));cursor:pointer}
+.lockrow input{width:22px;height:22px;flex:none;margin-top:2px;accent-color:var(--acc, #4ade80)}
+.lockrow b{display:block;font-weight:600}
+.lockrow small{display:block;opacity:.7;margin-top:2px;line-height:1.35}

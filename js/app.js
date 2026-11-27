@@ -53,7 +53,7 @@
   // Dropsätze nur bei Maschinen-/Isolationsübungen, direkt nach dem letzten Satz ohne Pause.
   var PLANS = {
     // 1–2 Tage: Ganzkörper (Supersätze sparen Zeit)
-    full:["beinpresse","beinbeuger","brustpresse","latzug","rudern","seitheben","reverse_fly","hammer","trizeps_oh","rope","waden","reverse"],
+    full:["beinpresse","rdl","brustpresse","latzug","rudern","seitheben","reverse_fly","hammer","trizeps_oh","rope","waden","reverse"],
     // 3 Tage: Ganzkörper A/B/C
     fullA:["kniebeuge","beinbeuger","brustpresse","latzug","butterfly","seitheben","reverse_fly","hammer","trizeps_oh","waden","reverse"],
     fullB:["rdl","beinstrecker","schulterpresse","kabelrudern","brustpresse_m","facepull","preacher","rope","bauch"],
@@ -538,7 +538,7 @@
     kgEl.innerHTML = fmt(head) + "<small>kg</small>";
 
     var le = lastEntry(ex.id);
-    last.textContent = le ? "Zuletzt (" + dateShort(le.date) + "): " + repsLine(le.e) : "";
+    last.textContent = ""; last.hidden = true;
     var why = $(".why", li); why.innerHTML = "";
     if (le){ var b = document.createElement("b"); b.textContent = sg.plateau ? "Deload: " + fmt(-sg.delta) + " kg weniger" : sg.delta > 0 ? "Ziel: +" + fmt(sg.delta) + " kg" : sg.delta < 0 ? "Ziel: " + fmt(-sg.delta) + " kg weniger" : sg.repDelta > 0 ? "Ziel: +" + sg.repDelta + " Wdh." : "Ziel: gleich halten"; why.appendChild(b);
       var wr = document.createElement("span"); wr.className = "whyr"; wr.textContent = sg.reason; why.appendChild(wr); }
@@ -1834,6 +1834,7 @@
   function renderTDays(){
     var box = $("#tDays"); box.innerHTML = "";
     DAYORDER.forEach(function(d){ var b = document.createElement("button"); b.type = "button"; b.textContent = DAYN[d]; b.dataset.d = d; b.setAttribute("aria-pressed", String(TRAIN_DAYS.indexOf(d) >= 0)); box.appendChild(b); });
+    var lk = $("#lockAudio"); if (lk) lk.checked = lockOn();
     $("#tdMeta").textContent = TRAIN_DAYS.length ? DAYORDER.filter(function(d){ return TRAIN_DAYS.indexOf(d) >= 0; }).map(function(d){ return DAYN[d]; }).join(", ") : "keine";
   }
   function applyDays(list){
@@ -1865,8 +1866,9 @@
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "3.4", APP_BUILT = "2026-11-27T08:17:20Z";
+  var APP_VERSION = "3.5", APP_BUILT = "2026-11-27T08:23:57Z";
   var CHANGES = [
+    ["3.5", "Beinbeuger raus (2 Tage) → Rumänisches Kreuzheben, „Zuletzt“-Zeile weg, Pausen-Ton auch bei gesperrtem Handy"],
     ["3.4", "Trainingsplan passt sich an die Anzahl Trainingstage an (2–6), neue Übungen, Trizeps über Kopf zurück (Superset mit Hammer Curls)"],
     ["3.3", "Trizeps über Kopf raus (Zeit), Details zu Übungen und Werten aufklappbar"],
     ["3.2", "Aufbau-Tag nach dem Training markiert, Heute im Diagramm ab 18 Uhr, Übungen am Ruhetag aufklappbar"],
@@ -2707,7 +2709,7 @@
   var tState = null, tIv = null, audio = null;
   function ensureAudio(){ try { if (!audio){ var AC = window.AudioContext || window.webkitAudioContext; if (AC) audio = new AC(); } if (audio && audio.state === "suspended") audio.resume(); } catch (e) { audio = null; } }
   function beep(){
-    if (!audio) return;
+    if (!audio || lockActive()){ try { if (navigator.vibrate) navigator.vibrate([300, 120, 300, 120, 500]); } catch (e) {} return; }
     try {
       var comp = audio.createDynamicsCompressor(); comp.connect(audio.destination);
       [0, 0.18, 0.36, 0.8, 0.98, 1.16, 1.6, 1.78, 1.96].forEach(function(t, i){
@@ -2718,9 +2720,41 @@
     } catch (e) {}
     try { if (navigator.vibrate) navigator.vibrate([300, 120, 300, 120, 500]); } catch (e) {}
   }
+  // Sperrbildschirm-Modus: Pause als Audiospur (läuft auch bei gesperrtem Handy, zeigt Fortschritt im Sperrbildschirm)
+  var LOCK_KEY = "fit-lockaudio", lockEl = null, lockUrl = null;
+  function lockOn(){ try { return localStorage.getItem(LOCK_KEY) === "1"; } catch (e) { return false; } }
+  function lockActive(){ return !!(lockEl && !lockEl.paused); }
+  function pauseWav(secs){
+    var R = 8000, tail = 2.4, n = Math.round((secs + tail) * R), buf = new ArrayBuffer(44 + n), v = new DataView(buf), a = new Uint8Array(buf, 44);
+    function str(o, t){ for (var i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); }
+    str(0, "RIFF"); v.setUint32(4, 36 + n, true); str(8, "WAVEfmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, R, true); v.setUint32(28, R, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); str(36, "data"); v.setUint32(40, n, true);
+    a.fill(128);
+    function tone(t0, dur, f, amp){ var s0 = Math.round(t0 * R), len = Math.round(dur * R), per = R / f; for (var i = 0; i < len && s0 + i < n; i++){ if (s0 + i < 0) continue; a[s0 + i] = 128 + ((i % per) < per / 2 ? amp : -amp); } }
+    for (var c = 3; c >= 1; c--) if (secs - c > 0) tone(secs - c, 0.1, 760, 70);
+    [0, 0.18, 0.36, 0.8, 0.98, 1.16, 1.6, 1.78, 1.96].forEach(function(t, i){ tone(secs + t, 0.15, i >= 6 ? 1320 : 1040, 120); });
+    return URL.createObjectURL(new Blob([buf], {type:"audio/wav"}));
+  }
+  function lockStop(){ try { if (lockEl){ lockEl.pause(); lockEl.removeAttribute("src"); lockEl.load(); } if (lockUrl) URL.revokeObjectURL(lockUrl); lockUrl = null; if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "none"; } catch (e) {} }
+  function lockPlay(){
+    if (!lockOn() || !tState || tState.over) return;
+    var secs = Math.max(1, Math.round((tState.end - Date.now()) / 1000));
+    try {
+      lockStop();
+      if (!lockEl){ lockEl = new Audio(); lockEl.setAttribute("playsinline", ""); lockEl.addEventListener("ended", lockStop); }
+      lockUrl = pauseWav(secs); lockEl.src = lockUrl; lockEl.volume = 1;
+      var pr = lockEl.play(); if (pr && pr.catch) pr.catch(function(){});
+      if ("mediaSession" in navigator && window.MediaMetadata){
+        var at = new Date(tState.end).toLocaleTimeString("de-DE", {hour:"2-digit", minute:"2-digit"});
+        navigator.mediaSession.metadata = new MediaMetadata({title:"Pause · weiter um " + at, artist:tState.name ? "nach " + tState.name : "Training", album:"Body Tracking", artwork:[{src:"icon-512.png", sizes:"512x512", type:"image/png"}]});
+        navigator.mediaSession.playbackState = "playing";
+        try { navigator.mediaSession.setPositionState({duration:secs + 2.4, position:0, playbackRate:1}); } catch (e) {}
+      }
+    } catch (e) {}
+  }
   var lastCd = null;
   function countBeep(){
-    if (!audio) return;
+    if (!audio || lockActive()) return;
     try { var o = audio.createOscillator(), g = audio.createGain(); o.type = "square"; o.frequency.value = 760; o.connect(g); g.connect(audio.destination);
       var s = audio.currentTime; g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(0.5, s + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, s + 0.09); o.start(s); o.stop(s + 0.1); } catch (e) {}
   }
@@ -2759,20 +2793,22 @@
     var lbl = label || "Pause";
     tState = {total:(secs || ex.rest || 90), end:Date.now() + (secs || ex.rest || 90) * 1000, over:false, name:ex.name, label:lbl};
     var t = $("#timer"); t.hidden = false; t.classList.remove("over"); t.classList.remove("out"); $("#tName").textContent = "";
-    clearInterval(tIv); tIv = setInterval(tick, 250); tick(); persistTimer();
+    clearInterval(tIv); tIv = setInterval(tick, 250); tick(); persistTimer(); lockPlay();
   }
   $("#tPlus").addEventListener("click", function(){
     if (!tState) return;
     if (tState.over){ tState.over = false; tState.end = Date.now() + 30000; $("#timer").classList.remove("over"); $("#tName").textContent = tState.label || ("Pause nach " + tState.name); clearInterval(tIv); tIv = setInterval(tick, 250); }
     else tState.end += 30000;
-    tick(); persistTimer();
+    tick(); persistTimer(); lockPlay();
   });
-  function stopTimer(){ if (!tState && $("#timer").hidden) return; clearInterval(tIv); tIv = null; tState = null; $("#timer").hidden = true; persistTimer(); }
+  function stopTimer(){ lockStop(); if (!tState && $("#timer").hidden) return; clearInterval(tIv); tIv = null; tState = null; $("#timer").hidden = true; persistTimer(); }
   $("#tStop").addEventListener("click", stopTimer);
 
   var toastT = null;
   function toast(msg){ var t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(function(){ t.hidden = true; }, 2200); }
 
+  var lkIn = $("#lockAudio");
+  if (lkIn) lkIn.addEventListener("change", function(){ try { localStorage.setItem(LOCK_KEY, lkIn.checked ? "1" : "0"); } catch (e) {} if (!lkIn.checked) lockStop(); else if (tState && !tState.over) lockPlay(); toast(lkIn.checked ? "Pausen-Ton auch bei gesperrtem Handy an" : "Aus"); });
   buildList(); showView(); keyFolds(); applyFolds(); renderTDays(); renderMeals(TRAIN_DAYS.indexOf(new Date().getDay()) >= 0 ? "train" : "rest"); renderTraining(); renderFood(); renderWater(); applyDrafts(); restoreOpen(); restoreTimer(); restoreTm();
   setInterval(renderScores, 60000);
 })();
