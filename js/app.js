@@ -53,7 +53,7 @@
   // Dropsätze nur bei Maschinen-/Isolationsübungen, direkt nach dem letzten Satz ohne Pause.
   var PLANS = {
     // 1–2 Tage: Ganzkörper (Supersätze sparen Zeit)
-    full:["beinpresse","brustpresse","latzug","rudern","seitheben","reverse_fly","preacher","hammer","trizeps_oh","rope","waden","reverse"],
+    full:["beinpresse","brustpresse","latzug","butterfly","rudern","seitheben","reverse_fly","hammer","trizeps_oh","rope","reverse","waden"],
     // 3 Tage: Ganzkörper A/B/C
     fullA:["kniebeuge","beinbeuger","brustpresse","latzug","butterfly","seitheben","reverse_fly","hammer","trizeps_oh","waden","reverse"],
     fullB:["rdl","beinstrecker","schulterpresse","kabelrudern","brustpresse_m","facepull","preacher","rope","bauch"],
@@ -1022,7 +1022,7 @@
       return out;
     }).filter(Boolean).slice(0, 80);
   }
-  var LIM = [{k:"f", n:"Fett", max:90, u:"g"}, {k:"s", n:"Zucker", max:35, u:"g"}, {k:"k", n:"Kalorien", max:3000, u:"kcal"}], limOver = null;
+  var LIM = [{k:"f", n:"Fett", max:90, u:"g"}, {k:"s", n:"Zucker", max:50, u:"g"}, {k:"k", n:"Kalorien", max:3000, u:"kcal"}], limOver = null;
   function renderLimits(items){
     var box = $("#limits"); if (!box) return; var t = sum(items), tracked = items.filter(function(it){ return it.sugar !== undefined || it.fat !== undefined; }).length;
     var rows = LIM.map(function(l){ var v = t[l.k] || 0, pc = Math.min(100, v / l.max * 100), over = v > l.max, near = !over && v > l.max * 0.8; return '<div class="lim' + (over ? " over" : near ? " near" : "") + '"><span>' + l.n + '</span><b>' + Math.round(v) + ' / ' + l.max + ' ' + l.u + '</b><i style="width:' + pc + '%"></i></div>'; }).join("");
@@ -1098,7 +1098,7 @@
     var rows = [
       {n:"Eiweiß", v:s.p, max:GOAL_PROT, goal:true, show:true},
       {n:"Fett", v:s.f, max:90, show:has("fat")},
-      {n:"Zucker", v:s.s, max:35, show:has("sugar")}
+      {n:"Zucker", v:s.s, max:50, show:has("sugar")}
     ];
     $("#fsGrid").innerHTML = rows.map(function(r){
       var pc = Math.min(100, r.v / r.max * 100), st = r.goal ? (r.v >= r.max - 10 ? "ok" : "") : (r.v > r.max ? "over" : r.v > r.max * 0.8 ? "near" : "");
@@ -1107,7 +1107,7 @@
     var over = [];
     if (s.k > 3000) over.push("Kalorien " + s.k.toLocaleString("de-DE") + " / 3.000");
     if (has("fat") && s.f > 90) over.push("Fett " + Math.round(s.f) + " / 90 g");
-    if (has("sugar") && s.s > 35) over.push("Zucker " + Math.round(s.s) + " / 35 g");
+    if (has("sugar") && s.s > 50) over.push("Zucker " + Math.round(s.s) + " / 50 g");
     var lw = $("#limits"); lw.hidden = !over.length; lw.textContent = over.length ? "⚠ Über dem Limit: " + over.join(", ") : "";
     renderScores();
 
@@ -1907,8 +1907,9 @@
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "3.6", APP_BUILT = "2026-11-27T08:28:17Z";
+  var APP_VERSION = "3.7", APP_BUILT = "2026-11-27T08:31:21Z";
   var CHANGES = [
+    ["3.7", "2-Tage-Plan: Butterfly zurück, Preacher raus, Waden zuletzt; Zucker-Limit 50 g"],
     ["3.6", "Kreuzheben raus, Preacher Curls zurück, Dead Hang mit Stoppuhr vor dem Training"],
     ["3.5", "Beinbeuger raus (2 Tage) → Rumänisches Kreuzheben, „Zuletzt“-Zeile weg, Pausen-Ton auch bei gesperrtem Handy"],
     ["3.4", "Trainingsplan passt sich an die Anzahl Trainingstage an (2–6), neue Übungen, Trizeps über Kopf zurück (Superset mit Hammer Curls)"],
