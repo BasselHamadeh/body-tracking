@@ -1371,3 +1371,7 @@ body:not(.tm) #exlist .ex.done .ex-state{display:block !important}
 .hangcard.done:not(.run) .hgtime{opacity:.85}
 
 .wnote{opacity:.8;font-size:14px}
+
+.lgd{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center}
+.lgd .lg{display:inline-flex;align-items:center;gap:7px}
+.lgd .trk{width:20px;height:12px;padding:0;border-radius:999px;font-size:0;line-height:0;vertical-align:middle}

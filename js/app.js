@@ -949,15 +949,21 @@
     var due = isWD && (!list.length || weighDue(list[0].id));
     $("#bwMeta").textContent = list.length ? fmt(list[0].bw) + " kg" + (due ? ", wiegen fällig" : "") : "Noch nichts";
   }
+  function bwToast(v){
+    var t = todayId(), prev = sessions.filter(function(x){ return x.bw > 0 && x.id < t; }).sort(function(a, b){ return a.id < b.id ? 1 : -1; })[0];
+    if (!prev) return toast("⚖️ " + fmt(v) + " kg gespeichert");
+    var d = Math.round((v - prev.bw) * 10) / 10, wk = Math.max(1, Math.round((dateOf(t) - dateOf(prev.id)) / 86400000) / 7), pw = d / wk;
+    toast("⚖️ " + fmt(v) + " kg · " + (d > 0 ? "+" : d < 0 ? "−" : "±") + fmt(Math.abs(d)) + " kg" + (pw >= 0.1 && pw <= 0.5 ? " · perfekt für Aufbau 💪" : pw > 0.5 ? " · etwas schnell" : pw < -0.1 ? " · mehr essen" : " · stabil"));
+  }
   $("#wqSave").addEventListener("click", function(){
     var v = num($("#wqIn").value);
     if (v === null || v < 30 || v > 250){ toast("Gewicht in kg eintragen, z. B. 82,5."); $("#wqIn").focus(); return; }
-    saveSessionPatch({bw: Math.round(v * 10) / 10}).then(function(){ $("#wqIn").value = ""; toast("Gewicht gespeichert"); renderBW(); renderDay(); }).catch(function(e){ toast(errText(e)); });
+    saveSessionPatch({bw: Math.round(v * 10) / 10}).then(function(){ $("#wqIn").value = ""; bwToast(Math.round(v * 10) / 10); renderBW(); renderDay(); }).catch(function(e){ toast(errText(e)); });
   });
   $("#bwSave").addEventListener("click", function(){
     var v = num($("#bwIn").value);
     if (v === null || v < 30 || v > 250){ toast("Gewicht in kg eintragen, z. B. 82,5."); $("#bwIn").focus(); return; }
-    saveSessionPatch({bw: Math.round(v * 10) / 10}).then(function(){ $("#bwIn").value = ""; toast("Gewicht gespeichert"); renderBW(); }).catch(function(e){ toast(errText(e)); });
+    saveSessionPatch({bw: Math.round(v * 10) / 10}).then(function(){ $("#bwIn").value = ""; bwToast(Math.round(v * 10) / 10); renderBW(); }).catch(function(e){ toast(errText(e)); });
   });
 
   // ---------- Dead Hang (Stoppuhr vor dem Training) ----------
@@ -1084,6 +1090,23 @@
     li.appendChild(removable ? rmBtn(it.name + " entfernen", "id", it.id) : document.createElement("span"));
     return li;
   }
+  // Rückmeldungen nach dem Eintragen: zeigen, was noch fehlt, und feiern, wenn ein Ziel erreicht ist
+  function daySnap(){ var f = sum(todayFood()); return {k:f.k, p:f.p, s:f.s, f:f.f, ml:todayWaterLog().reduce(function(a, x){ return a + (x.ml || 0); }, 0)}; }
+  function feedToast(b0, head, kind){
+    var a = daySnap(), wg = waterGoal(), kn = function(n){ return Math.round(n).toLocaleString("de-DE"); };
+    if (b0.p < GOAL_PROT && a.p >= GOAL_PROT) return toast("🎯 Eiweißziel geschafft: " + Math.round(a.p) + " g");
+    if (b0.k < GOAL_KCAL && a.k >= GOAL_KCAL) return toast("🎯 Kalorien voll: " + kn(a.k) + " kcal");
+    if (b0.ml < wg && a.ml >= wg) return toast("💧 Wasserziel geschafft: " + liters(a.ml));
+    if (b0.k <= 3000 && a.k > 3000) return toast("⚠️ Jetzt über 3.000 kcal");
+    if (b0.s <= 50 && a.s > 50) return toast("⚠️ Zucker jetzt über 50 g");
+    if (b0.f <= 90 && a.f > 90) return toast("⚠️ Fett jetzt über 90 g");
+    var rest = kind === "water" ? (a.ml < wg ? "noch " + liters(wg - a.ml) : "Ziel ✓")
+      : a.p < GOAL_PROT ? "noch " + Math.round(GOAL_PROT - a.p) + " g Eiweiß" : a.k < GOAL_KCAL ? "noch " + kn(GOAL_KCAL - a.k) + " kcal" : "alles drin ✓";
+    toast(head + " · " + rest);
+  }
+  function foodHead(items){ var k = 0, p = 0; items.forEach(function(it){ k += it.kcal || 0; p += it.protein || 0; }); return "+" + Math.round(k).toLocaleString("de-DE") + " kcal, " + Math.round(p) + " g Eiweiß"; }
+  function waterHead(ml){ return "💧 +" + (ml >= 1000 ? liters(ml) : Math.round(ml) + " ml"); }
+
   // Aufbau-Tag: Nachricht passt sich an, wie weit du mit Eiweiß und Kalorien bist
   function aufbauMsg(){
     var s = sum(todayFood()), p = Math.round(s.p), k = Math.round(s.k), pm = GOAL_PROT - p, km = GOAL_KCAL - k, h = new Date().getHours();
@@ -1258,7 +1281,8 @@
     var nowIso = new Date().toISOString(), items = cleanItems(pasted.map(function(x){ return {name:x.name, amount:"", kcal:x.kcal, protein:x.protein, fat:x.fat, sugar:x.sugar, at:nowIso}; }));
     if (!items.length){ toast("Die Werte passen nicht."); return; }
     var btn = this; btn.disabled = true;
-    saveFood(todayFood().concat(items)).then(function(){ return addWaterFor(items); }).then(function(wml){ if (wml) setTimeout(function(){ toast("+" + wml + " ml zum Wasser gezählt 💧"); }, 1400); }).then(function(){ $("#mPaste").value = ""; renderPaste(); toast(items.length > 1 ? items.length + " Einträge hinzugefügt" : items[0].name + " hinzugefügt"); renderFood(); })
+    var b0 = daySnap();
+    saveFood(todayFood().concat(items)).then(function(){ return addWaterFor(items); }).then(function(wml){ $("#mPaste").value = ""; renderPaste(); feedToast(b0, foodHead(items) + (wml ? ", 💧 +" + wml + " ml" : "")); renderFood(); })
       .catch(function(e){ toast(errText(e)); btn.disabled = false; });
   });
   $("#pFav").addEventListener("click", function(){ pasted.forEach(addFav); saveFavs(); renderFavs(); toast("Gemerkt"); });
@@ -1390,10 +1414,10 @@
     var btn = this; btn.disabled = true;
     var g = uid6(), title = pendingTitle, ml = pendingWater;
     var add = (pending || []).map(function(it){ var o = {}; for (var k in it) o[k] = it[k]; o.g = g; o.gt = title; o.at = new Date().toISOString(); return o; });
-    var p1 = add.length ? saveFood(todayFood().concat(add)) : Promise.resolve();
+    var b0 = daySnap(), p1 = add.length ? saveFood(todayFood().concat(add)) : Promise.resolve();
     p1.then(function(){ return ml > 0 ? addWater(ml) : null; }).then(function(){
       pending = null; pendingWater = 0; renderPreview(); $("#foodText").value = ""; setPhoto(null);
-      toast(ml > 0 && !add.length ? "Wasser hinzugefügt" : "Hinzugefügt"); renderFood(); renderWater();
+      feedToast(b0, add.length ? foodHead(add) + (ml > 0 ? ", 💧 +" + ml + " ml" : "") : waterHead(ml), add.length ? "food" : "water"); renderFood(); renderWater();
     }).catch(function(e){ toast(errText(e)); }).then(function(){ btn.disabled = false; });
   });
   $("#previewDrop").addEventListener("click", function(){ pending = null; pendingWater = 0; renderPreview(); });
@@ -1447,7 +1471,8 @@
       if (favEditOn) return;
       var items = cleanItems([{name:f.name, amount:"", kcal:f.kcal, protein:f.protein, sugar:f.sugar, fat:f.fat, at:new Date().toISOString()}]);
       add.classList.add("hit"); setTimeout(function(){ add.classList.remove("hit"); }, 350);
-      saveFood(todayFood().concat(items)).then(function(){ f.u = (f.u || 0) + 1; saveFavs(); addWaterFor([f]); toast(f.name + " hinzugefügt"); renderFood(); renderFavs(); }).catch(function(e){ toast(errText(e)); });
+      var b0 = daySnap();
+      saveFood(todayFood().concat(items)).then(function(){ f.u = (f.u || 0) + 1; saveFavs(); return addWaterFor([f]); }).then(function(wml){ feedToast(b0, foodHead(items) + (wml ? ", 💧 +" + wml + " ml" : "")); renderFood(); renderFavs(); }).catch(function(e){ toast(errText(e)); });
     }
   });
   $("#mFav").addEventListener("click", function(){
@@ -1502,7 +1527,8 @@
     if (!name || k === null || p === null){ toast("Bitte Name, kcal und Eiweiß eintragen."); return; }
     var items = cleanItems([{name:name, amount:"", kcal:k, protein:p, sugar:num($("#mS").value), fat:num($("#mF").value), at:new Date().toISOString()}]);
     if (!items.length){ toast("Die Werte passen nicht."); return; }
-    saveFood(todayFood().concat(items)).then(function(){ $("#mName").value = ""; $("#mK").value = ""; $("#mP").value = ""; $("#mS").value = ""; $("#mF").value = ""; toast("Hinzugefügt"); renderFood(); })
+    var b0 = daySnap();
+    saveFood(todayFood().concat(items)).then(function(){ $("#mName").value = ""; $("#mK").value = ""; $("#mP").value = ""; $("#mS").value = ""; $("#mF").value = ""; feedToast(b0, foodHead(items)); renderFood(); })
       .catch(function(e){ toast(errText(e)); });
   });
   var openFood = null, foodAll = false;
@@ -1596,12 +1622,14 @@
   $(".wbtns").addEventListener("click", function(ev){
     var b = ev.target.closest("button[data-ml]"); if (!b) return;
     var ml = Number(b.dataset.ml);
-    addWater(ml).then(function(){ toast("+" + (ml >= 1000 ? liters(ml) : ml + " ml")); renderWater(); }).catch(function(e){ toast(errText(e)); });
+    var b0 = daySnap();
+    addWater(ml).then(function(){ feedToast(b0, waterHead(ml), "water"); renderWater(); }).catch(function(e){ toast(errText(e)); });
   });
   $("#wAddC").addEventListener("click", function(){
     var v = num($("#wCustom").value);
     if (v === null || v <= 0 || v > 5000){ toast("Menge in ml eintragen, z. B. 330."); $("#wCustom").focus(); return; }
-    addWater(v).then(function(){ $("#wCustom").value = ""; toast("+" + Math.round(v) + " ml"); renderWater(); }).catch(function(e){ toast(errText(e)); });
+    var b0 = daySnap();
+    addWater(v).then(function(){ $("#wCustom").value = ""; feedToast(b0, waterHead(v), "water"); renderWater(); }).catch(function(e){ toast(errText(e)); });
   });
   $("#wUndo").addEventListener("click", function(){
     var log = todayWaterLog(); if (!log.length) return;
@@ -1649,7 +1677,7 @@
   $("#slSave").addEventListener("click", function(){
     var v = cleanSleep({from:$("#slFrom").value, to:$("#slTo").value});
     if (!v){ toast("Bitte Uhrzeiten prüfen."); return; }
-    saveSessionPatch({sl:{from:v.from, to:v.to}}, slWakeId()).then(function(){ sleepDirty = false; toast("Schlaf: " + hrs(v.min)); renderTraining(); }).catch(function(e){ toast(errText(e)); });
+    saveSessionPatch({sl:{from:v.from, to:v.to}}, slWakeId()).then(function(){ sleepDirty = false; var sc = sleepScore(v.min); toast((sc >= 8 ? "😴 " : sc >= 5 ? "🙂 " : "🥱 ") + hrs(v.min) + " Schlaf · " + f1(sc) + "/10" + (sc < 5 ? " · heute ruhig angehen" : sc >= 9.5 ? " · top erholt" : "")); renderTraining(); }).catch(function(e){ toast(errText(e)); });
   });
 
   // ---------- Tagesbewertung ----------
@@ -1927,8 +1955,9 @@
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "3.8", APP_BUILT = "2026-11-27T08:37:25Z";
+  var APP_VERSION = "3.9", APP_BUILT = "2026-11-27T12:07:14Z";
   var CHANGES = [
+    ["3.9", "Rückmeldungen nach dem Eintragen zeigen, was noch fehlt, und feiern erreichte Ziele; Legende im Verlauf ohne Wochentage"],
     ["3.8", "Wiegen nur dienstags als fällig, sonst Hinweis im Verlauf; Aufbau-Tag-Nachricht zeigt, wie weit du bist"],
     ["3.7", "2-Tage-Plan: Butterfly zurück, Preacher raus, Waden zuletzt; Zucker-Limit 50 g"],
     ["3.6", "Kreuzheben raus, Preacher Curls zurück, Dead Hang mit Stoppuhr vor dem Training"],
@@ -2869,7 +2898,7 @@
   $("#tStop").addEventListener("click", stopTimer);
 
   var toastT = null;
-  function toast(msg){ var t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(function(){ t.hidden = true; }, 2200); }
+  function toast(msg){ var t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(function(){ t.hidden = true; }, msg.length > 32 ? 3200 : 2200); }
 
   var lkIn = $("#lockAudio");
   if (lkIn) lkIn.addEventListener("change", function(){ try { localStorage.setItem(LOCK_KEY, lkIn.checked ? "1" : "0"); } catch (e) {} if (!lkIn.checked) lockStop(); else if (tState && !tState.over) lockPlay(); toast(lkIn.checked ? "Pausen-Ton auch bei gesperrtem Handy an" : "Aus"); });
