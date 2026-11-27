@@ -1369,3 +1369,5 @@ body:not(.tm) #exlist .ex.done .ex-state{display:block !important}
 .hangcard.run .hgtime{color:var(--blue)}
 .hangcard.run .hgbtn{background:var(--red);border-color:var(--red);color:#fff}
 .hangcard.done:not(.run) .hgtime{opacity:.85}
+
+.wnote{opacity:.8;font-size:14px}

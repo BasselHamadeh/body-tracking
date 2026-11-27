@@ -583,7 +583,7 @@
     var isTrain = TRAIN_DAYS.indexOf(wd) >= 0;
     var dtT = dayType(t);
     $("#dayTitle").textContent = isTrain ? "Trainingstag" : dtT === "rest1" ? "Aufbau-Tag" : dtT === "rest2" ? "Erholung" : "Ruhetag";
-    $("#daySub").textContent = isTrain ? "" : dtT === "rest1" ? "Deine Muskeln wachsen heute. Iss gut: 150 g Eiweiß und deine Kalorien." : dtT === "rest2" ? "Weiter gut essen. " + sub : sub;
+    $("#daySub").textContent = isTrain ? "" : dtT === "rest1" ? aufbauMsg() : dtT === "rest2" ? "Weiter gut essen. " + sub : sub;
     var done = 0;
     PLAN.forEach(function(ex){
       var te = todayEntry(ex.id), s = $('#segbar span[data-id="' + ex.id + '"]');
@@ -943,9 +943,10 @@
       li.appendChild(a); li.appendChild(b); li.appendChild(c); ul.appendChild(li);
     });
     var hint = "";
-    if (list.length){ var days = Math.round((dateOf(todayId()) - dateOf(list[0].id)) / 86400000); if (days >= 7) hint = "Letztes Wiegen vor " + days + " Tagen, Zeit zum Wiegen."; }
+    var isWD = new Date().getDay() === WEIGH_DAY;
+    if (isWD && list.length){ var days = Math.round((dateOf(todayId()) - dateOf(list[0].id)) / 86400000); if (days >= 7) hint = "Letztes Wiegen vor " + days + " Tagen, Zeit zum Wiegen."; }
     $("#bwHint").textContent = hint;
-    var due = !list.length || weighDue(list[0].id);
+    var due = isWD && (!list.length || weighDue(list[0].id));
     $("#bwMeta").textContent = list.length ? fmt(list[0].bw) + " kg" + (due ? ", wiegen fällig" : "") : "Noch nichts";
   }
   $("#wqSave").addEventListener("click", function(){
@@ -1083,8 +1084,21 @@
     li.appendChild(removable ? rmBtn(it.name + " entfernen", "id", it.id) : document.createElement("span"));
     return li;
   }
+  // Aufbau-Tag: Nachricht passt sich an, wie weit du mit Eiweiß und Kalorien bist
+  function aufbauMsg(){
+    var s = sum(todayFood()), p = Math.round(s.p), k = Math.round(s.k), pm = GOAL_PROT - p, km = GOAL_KCAL - k, h = new Date().getHours();
+    var pOk = pm <= 5, kOk = km <= 100, kn = function(n){ return n.toLocaleString("de-DE"); };
+    if (!k) return "Deine Muskeln wachsen heute. Iss gut: " + GOAL_PROT + " g Eiweiß und " + kn(GOAL_KCAL) + " kcal.";
+    if (pOk && kOk) return k > 3300 ? "Ziel erreicht ✓ Eiweiß und Kalorien geschafft, etwas drüber ist heute okay." : p >= GOAL_PROT + 20 ? "Perfekter Aufbau-Tag 🔥 " + p + " g Eiweiß, " + kn(k) + " kcal. Besser geht’s nicht." : "Ziel erreicht 💪 " + p + " g Eiweiß und " + kn(k) + " kcal. Starker Aufbau-Tag.";
+    if (pOk) return "Eiweiß geschafft ✓ Noch " + kn(km) + " kcal, dann ist der Tag perfekt.";
+    if (kOk) return "Kalorien passen ✓ Noch " + pm + " g Eiweiß" + (pm <= 50 ? ", z. B. ein Shake." : ".");
+    var pc = Math.round((Math.min(1, p / GOAL_PROT) + Math.min(1, k / GOAL_KCAL)) / 2 * 100);
+    if (h >= 20 && pc < 75) return "Wird knapp: noch " + pm + " g Eiweiß und " + kn(km) + " kcal. Iss heute noch was Großes.";
+    return (pc >= 70 ? "Gut dabei (" + pc + " %). " : pc >= 40 ? "Halbzeit (" + pc + " %). " : "Muskeln wachsen heute. ") + "Noch " + pm + " g Eiweiß und " + kn(km) + " kcal.";
+  }
   function renderFood(){
     var items = todayFood(), s = sum(items);
+    try { if (dayType(todayId()) === "rest1" && TRAIN_DAYS.indexOf(new Date().getDay()) < 0) $("#daySub").textContent = aufbauMsg(); } catch (e) {}
     var has = function(k){ return items.some(function(it){ return it[k] !== undefined; }); };
     $("#mKcal").textContent = s.k.toLocaleString("de-DE");
     var tk = $("#tKcal"); tk.firstElementChild.style.width = Math.min(100, s.k / GOAL_KCAL * 100) + "%";
@@ -1703,9 +1717,15 @@
   function sleepScore(min){ var h = min / 60, sc = h < 7 ? 10 - (7 - h) * 2.5 : h > 9.5 ? 10 - (h - 9.5) * 2 : 10; return Math.max(0, Math.round(sc * 10) / 10); }
   function renderBWProg(){
     var list = sessions.filter(function(x){ return x.bw > 0 && x.id <= todayId(); }).slice().sort(function(a, b){ return a.id < b.id ? -1 : 1; });
-    var due = !list.length || weighDue(list[list.length - 1].id);
+    var due0 = !list.length || weighDue(list[list.length - 1].id), isWD = new Date().getDay() === WEIGH_DAY, due = due0 && isWD;
     var c = $("#bwDue"); if (c) c.hidden = !due;
     var dot = $("#tabDot"); if (dot) dot.hidden = !due;
+    var wn = $("#weighNote");
+    if (wn){
+      var dd = list.length ? Math.round((dateOf(todayId()) - dateOf(list[list.length - 1].id)) / 86400000) : 0;
+      wn.textContent = due0 && !isWD ? "⚖️ Wiegen diese Woche verpasst" + (list.length ? " (zuletzt vor " + dd + " Tagen)" : "") + ". Nächstes Mal Dienstag vor dem Training." : "";
+      wn.hidden = !wn.textContent;
+    }
     renderBody();
     var el = $("#bwProg"); if (!el) return;
     if (!list.length){ el.textContent = "Noch kein Gewicht eingetragen."; return; }
@@ -1907,8 +1927,9 @@
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "3.7", APP_BUILT = "2026-11-27T08:31:21Z";
+  var APP_VERSION = "3.8", APP_BUILT = "2026-11-27T08:37:25Z";
   var CHANGES = [
+    ["3.8", "Wiegen nur dienstags als fällig, sonst Hinweis im Verlauf; Aufbau-Tag-Nachricht zeigt, wie weit du bist"],
     ["3.7", "2-Tage-Plan: Butterfly zurück, Preacher raus, Waden zuletzt; Zucker-Limit 50 g"],
     ["3.6", "Kreuzheben raus, Preacher Curls zurück, Dead Hang mit Stoppuhr vor dem Training"],
     ["3.5", "Beinbeuger raus (2 Tage) → Rumänisches Kreuzheben, „Zuletzt“-Zeile weg, Pausen-Ton auch bei gesperrtem Handy"],
