@@ -17,3 +17,9 @@ create policy "docs_delete_own" on public.docs for delete using (auth.uid() = us
 
 grant usage on schema public to authenticated;
 grant select, insert, update, delete on public.docs to authenticated;
+
+-- Optional: zusätzliche Härtung (einmal ausführen, bestehende Daten bleiben gültig)
+-- Kein Zugriff ohne Anmeldung, Größe pro Eintrag begrenzt.
+revoke all on public.docs from anon;
+alter table public.docs add constraint docs_size check (pg_column_size(data) < 500000) not valid;
+alter table public.docs add constraint docs_keys check (char_length(doc_id) between 1 and 40 and char_length(coll) between 1 and 120) not valid;

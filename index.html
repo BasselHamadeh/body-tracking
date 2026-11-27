@@ -12,9 +12,9 @@
 <meta name="apple-mobile-web-app-title" content="Training">
 <meta name="theme-color" content="#1E242C">
 <script src="config.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<link rel="preload" href="fonts/barlow-400.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="fonts/barlowc-700.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
@@ -26,12 +26,15 @@
 <linearGradient id="gSec" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFB3B6"/><stop offset="1" stop-color="#E87A84"/></linearGradient>
 </defs></svg>
 <header class="top">
+  <div class="topin">
   <nav class="tabs" aria-label="Bereiche">
     <a href="#training" data-view="training">Training</a>
     <a href="#essen" data-view="essen">Essen</a>
     <a href="#wasser" data-view="wasser">Körper<span class="tabdot" id="tabDot" hidden></span></a>
     <a href="#verlauf" data-view="verlauf">Verlauf</a>
   </nav>
+  <button type="button" class="gear" id="setOpen" aria-label="Einstellungen" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.3 7.3 0 0 0-1.7-1L15 3.5h-4l-.4 2.5a7.3 7.3 0 0 0-1.7 1l-2.4-1-2 3.4L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.4 2.4-1c.5.4 1.1.7 1.7 1l.4 2.5h4l.4-2.5c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.4z"/><circle cx="12" cy="12" r="3"/></svg></button>
+  </div>
   <p class="syncbar" id="syncBar">Verbinde …</p>
   <p class="syncinfo" id="syncInfo" role="status" aria-live="polite" hidden></p>
 </header>
@@ -67,7 +70,7 @@
     <button type="button" class="tmtest" id="tmTest" hidden>Testtraining (zählt nicht)</button>
     <button type="button" class="showex" id="showEx" hidden>Übungen anzeigen</button>
     <button type="button" class="tmany" id="tmAny" hidden>Heute trotzdem trainieren</button>
-    <div class="weighcard" id="weighCard" hidden><span class="wgt">⚖️ Dienstag: vor dem Training wiegen</span><div class="krow"><label class="sr" for="wqIn">Gewicht in kg</label><input id="wqIn" inputmode="decimal" placeholder="kg" autocomplete="off"><button type="button" class="btn primary" id="wqSave">Speichern</button></div></div>
+    <div class="weighcard" id="weighCard" hidden><span class="wgt" id="wgT">⚖️ Heute wiegen</span><div class="krow"><label class="sr" for="wqIn">Gewicht in kg</label><input id="wqIn" inputmode="decimal" placeholder="kg" autocomplete="off"><button type="button" class="btn primary" id="wqSave">Speichern</button></div></div>
     <div class="hangcard" id="hangCard" hidden>
       <div class="hgl"><span class="hgt">Dead Hang</span><span class="hgm" id="hgMeta"></span></div>
       <span class="hgtime" id="hgTime" aria-live="polite">0 s</span>
@@ -91,11 +94,7 @@
   </div>
   <button type="button" class="nx" id="tmNextName" hidden></button>
 </div>
-    <details class="fold daysfold">
-      <summary><span class="ft">Trainingstage</span><span class="fm" id="tdMeta"></span></summary>
-      <div class="fold-in"><div class="tdays" id="tDays" role="group" aria-label="Trainingstage"></div>
-        <label class="lockrow"><input type="checkbox" id="lockAudio"><span><b>Pausen-Ton bei gesperrtem Handy</b><small>Zeigt die Pause im Sperrbildschirm und piept am Ende. Pausiert dabei deine Musik.</small></span></label></div>
-    </details>
+    <button type="button" class="planlink" id="planLink"><span>Trainingstage &amp; Plan</span><b id="planLinkM"></b></button>
   </section>
 
   <section class="view" data-name="verlauf" hidden>
@@ -114,13 +113,22 @@
         <div class="st s"><span class="sl">Ø Schlaf</span><b id="wkS">–</b><i class="bar"><i id="wkSb"></i></i></div>
       </div>
       <p class="wksum yest" id="wkYest"></p>
+      <p class="wksum streak" id="wkStreak" hidden></p>
       <p class="wksum" id="wkSum"></p>
-      <p class="chl">Ø ohne heute · Eiweiß pro Tag in g, Linie 150 g</p>
+      <p class="chl" id="wkChl">Ø ohne heute · Eiweiß pro Tag in g, Linie 150 g</p>
       <div class="chart"><div class="goal" id="wkGoal"></div><div class="bars" id="wkChart"></div></div>
       <p class="lgd"><span class="lg"><span class="trk"></span>Training</span><span class="lg"><span class="trk r1"></span>Aufbau</span><span class="lg"><span class="trk r2"></span>Erholung</span></p>
     </div>
 
     <div class="kcard" id="lastTr"></div>
+
+    <div class="kcard" id="musCard">
+      <div class="khead"><h2>Muskeln · 7 Tage</h2><span class="fm" id="musMeta"></span></div>
+      <div class="musfig" id="musFig"></div>
+      <p class="muslgd"><span><i class="lv1"></i>wenig</span><span><i class="lv2"></i>okay</span><span><i class="lv3"></i>gut</span><span><i class="lv4"></i>sehr viel</span></p>
+      <p class="mussum" id="musSum"></p>
+      <details class="vdet"><summary>Sätze pro Muskel</summary><ul class="muslist" id="musList"></ul><p class="musnote">Für Muskelaufbau gelten etwa 10–20 harte Sätze pro Muskel und Woche als gut. Hilfsmuskeln zählen halb.</p></details>
+    </div>
 
     <div class="kcard">
       <div class="khead"><h2>Progressive Overload</h2><span class="fm" id="ovlMeta"></span></div>
@@ -134,27 +142,17 @@
 
     <div id="history"></div>
 
-    <details class="cardf" id="dataBox">
-      <summary><span class="ft">Daten sichern</span><span class="fm" id="dataMeta"></span></summary>
-      <div class="cin">
-        <p class="dtxt" id="dataWhere"></p>
-        <div class="frow"><button type="button" class="btn primary" id="exBtn">Sicherung kopieren</button></div>
-        <textarea id="exText" class="dta" readonly hidden aria-label="Sicherung"></textarea>
-        <p class="dtxt">Wiederherstellen: Sicherung hier einfügen.</p>
-        <textarea id="imText" class="dta" aria-label="Sicherung einfügen" placeholder="Sicherung einfügen"></textarea>
-        <div class="frow"><button type="button" class="btn ghost" id="imBtn">Wiederherstellen</button></div>
-        <p class="fstatus" id="dataSt" role="status"></p>
-        <button type="button" class="linkbtn" id="lgOut" hidden>Abmelden</button>
-      </div>
+    <details class="cardf" id="recBox">
+      <summary><span class="ft">Rekorde</span><span class="fm" id="recMeta"></span></summary>
+      <div class="cin"><ul class="recl" id="recList"></ul></div>
     </details>
-    <details class="cardf" id="verBox"><summary><span class="ft">Version</span><span class="fm" id="verMeta"></span></summary><div class="cin"><ul class="verl" id="verList"></ul></div></details>
     <div hidden><ul id="bwList"></ul><span id="bwMeta"></span><p id="bwProg"></p></div>
   </section>
 
   <section class="view" data-name="essen" hidden>
     <div class="fsum">
       <div class="fs-top">
-        <div><span class="fs-l">Kalorien heute</span><div class="fs-k"><b id="mKcal">0</b><span>/ 2.800 kcal</span></div></div>
+        <div><span class="fs-l">Kalorien heute</span><div class="fs-k"><b id="mKcal">0</b><span id="mKcalGoal">/ 2.800 kcal</span></div></div>
         <span class="fs-left" id="fsLeft"></span>
       </div>
       <div class="track" id="tKcal"><i></i></div>
@@ -234,7 +232,18 @@
       </div>
       <div class="kspark-w" id="bwSparkW" hidden><svg class="kspark" id="bwSpark" viewBox="0 0 300 60" preserveAspectRatio="none" aria-hidden="true"></svg><div class="kspark-l" id="bwSparkL"></div></div>
       <div class="krow"><label class="sr" for="bwIn">Körpergewicht in kg</label><input id="bwIn" inputmode="decimal" placeholder="Gewicht heute" autocomplete="off"><button type="button" class="btn primary" id="bwSave">Eintragen</button></div>
+      <p class="bwgoal" id="bwGoal" hidden></p>
       <p class="fstatus" id="bwHint"></p>
+    </div>
+
+    <div class="kcard" id="msCard">
+      <div class="khead"><h2>Maße</h2><span class="fm" id="msMeta"></span></div>
+      <ul class="mslist" id="msList"></ul>
+      <details class="xmore" id="msMore"><summary>Neu messen</summary>
+        <div class="msgrid" id="msForm"></div>
+        <div class="frow"><button type="button" class="btn primary" id="msSave">Speichern</button></div>
+        <p class="msnote">Morgens messen, Maßband locker anlegen. Arm angespannt an der dicksten Stelle.</p>
+      </details>
     </div>
 
     <div class="kcard">
@@ -281,7 +290,74 @@
 <b class="lt">Training</b><p>Melde dich an. Deine Daten liegen sicher in deiner eigenen Datenbank und sind auf allen Geräten gleich.</p>
 <label class="sr" for="lgMail">E-Mail</label><input id="lgMail" name="username" type="email" inputmode="email" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="E-Mail">
 <label class="sr" for="lgPw">Passwort</label><input id="lgPw" name="password" type="password" autocomplete="current-password" placeholder="Passwort">
-<button type="submit" class="btn primary" id="lgIn">Anmelden</button><button type="button" class="btn ghost" id="lgUp">Konto erstellen</button><p class="fstatus" id="lgSt" role="status" aria-live="polite"></p></form></div>
+<button type="submit" class="btn primary" id="lgIn">Anmelden</button><p class="fstatus" id="lgSt" role="status" aria-live="polite"></p></form></div>
+<div class="sheet" id="setSheet" hidden role="dialog" aria-modal="true" aria-labelledby="setT">
+  <div class="sh-head"><button type="button" class="sh-back" id="setBack" hidden aria-label="Zurück">‹</button><h2 id="setT">Einstellungen</h2><button type="button" class="sh-x" id="setX" aria-label="Schließen">✕</button></div>
+  <div class="sh-body" id="setMain">
+    <section class="sgrp"><h3>Training</h3>
+      <div class="srow col"><span class="sl">Trainingstage</span><div class="tdays" id="tDays" role="group" aria-label="Trainingstage"></div><span class="sm" id="tdMeta"></span></div>
+      <button type="button" class="srow link" id="planOpen"><span class="sl">Plan anpassen<small id="planMeta"></small></span><span class="chev" aria-hidden="true">›</span></button>
+      <div class="srow"><span class="sl">Pausen</span><div class="seg2" data-pref="restAdj" role="group" aria-label="Pausenlänge"><button type="button" data-v="-15">−15 s</button><button type="button" data-v="0">Normal</button><button type="button" data-v="15">+15 s</button><button type="button" data-v="30">+30 s</button></div></div>
+      <label class="srow"><span class="sl">Wiegetag</span><select id="pWeigh" class="ssel"><option value="1">Montag</option><option value="2">Dienstag</option><option value="3">Mittwoch</option><option value="4">Donnerstag</option><option value="5">Freitag</option><option value="6">Samstag</option><option value="0">Sonntag</option><option value="-1">Aus</option></select></label>
+      <label class="srow"><span class="sl">Dead Hang anzeigen</span><input type="checkbox" class="tg" data-pref="hang"></label>
+    </section>
+    <section class="sgrp"><h3>Pausen-Ton</h3>
+      <div class="srow"><span class="sl">Lautstärke</span><div class="seg2" data-pref="vol" role="group" aria-label="Lautstärke"><button type="button" data-v="1">Leise</button><button type="button" data-v="2">Mittel</button><button type="button" data-v="3">Laut</button></div></div>
+      <label class="srow"><span class="sl">Countdown 3, 2, 1</span><input type="checkbox" class="tg" data-pref="cdBeep"></label>
+      <label class="srow"><span class="sl">Vibration<small>Nur Android, iPhones können das in Web-Apps nicht.</small></span><input type="checkbox" class="tg" data-pref="vib"></label>
+      <label class="srow"><span class="sl">Auch bei gesperrtem Handy<small>Zeigt die Pause im Sperrbildschirm. Pausiert dabei deine Musik.</small></span><input type="checkbox" class="tg" id="lockAudio"></label>
+      <button type="button" class="srow link" id="sndTest"><span class="sl">Ton testen</span><span class="chev" aria-hidden="true">▶</span></button>
+    </section>
+    <section class="sgrp"><h3>Ziele pro Tag</h3>
+      <label class="srow"><span class="sl">Kalorien</span><span class="nin"><input data-pref="kcal" inputmode="numeric" autocomplete="off"><i>kcal</i></span></label>
+      <label class="srow"><span class="sl">Eiweiß</span><span class="nin"><input data-pref="prot" inputmode="numeric" autocomplete="off"><i>g</i></span></label>
+      <label class="srow"><span class="sl">Wasser</span><span class="nin"><input data-pref="water" data-scale="1000" inputmode="decimal" autocomplete="off"><i>l</i></span></label>
+      <label class="srow"><span class="sl">Schlaf</span><span class="nin"><input data-pref="sleep" inputmode="decimal" autocomplete="off"><i>h</i></span></label>
+      <label class="srow"><span class="sl">Zielgewicht<small>Optional</small></span><span class="nin"><input data-pref="goalBw" inputmode="decimal" autocomplete="off" placeholder="–"><i>kg</i></span></label>
+    </section>
+    <section class="sgrp"><h3>Limits pro Tag</h3>
+      <label class="srow"><span class="sl">Kalorien höchstens</span><span class="nin"><input data-pref="kcalMax" inputmode="numeric" autocomplete="off"><i>kcal</i></span></label>
+      <label class="srow"><span class="sl">Fett höchstens</span><span class="nin"><input data-pref="fatMax" inputmode="numeric" autocomplete="off"><i>g</i></span></label>
+      <label class="srow"><span class="sl">Zucker höchstens</span><span class="nin"><input data-pref="sugarMax" inputmode="numeric" autocomplete="off"><i>g</i></span></label>
+      <button type="button" class="srow link" id="goalReset"><span class="sl">Ziele &amp; Limits zurücksetzen</span></button>
+    </section>
+    <section class="sgrp"><h3>Darstellung</h3>
+      <div class="srow"><span class="sl">Design</span><div class="seg2" data-pref="theme" role="group" aria-label="Design"><button type="button" data-v="auto">Auto</button><button type="button" data-v="light">Hell</button><button type="button" data-v="dark">Dunkel</button></div></div>
+      <div class="srow"><span class="sl">Schrift</span><div class="seg2" data-pref="big" role="group" aria-label="Schriftgröße"><button type="button" data-v="false">Normal</button><button type="button" data-v="true">Groß</button></div></div>
+    </section>
+    <section class="sgrp" id="dataBox"><h3>Daten</h3>
+      <p class="dtxt" id="dataWhere"></p>
+      <div class="frow"><button type="button" class="btn primary" id="exFile">Sicherung herunterladen</button><button type="button" class="btn ghost" id="exBtn">Kopieren</button></div>
+      <textarea id="exText" class="dta" readonly hidden aria-label="Sicherung"></textarea>
+      <p class="dtxt" id="snapInfo"></p>
+      <details class="xmore"><summary>Wiederherstellen</summary>
+        <div class="frow"><button type="button" class="btn ghost" id="imFileBtn">Datei wählen</button><button type="button" class="btn ghost" id="snapBtn" hidden>Auto-Sicherung</button></div>
+        <input type="file" id="imFile" accept="application/json,.json,.txt" hidden>
+        <textarea id="imText" class="dta" aria-label="Sicherung einfügen" placeholder="… oder Sicherung hier einfügen"></textarea>
+        <div class="frow"><button type="button" class="btn ghost" id="imBtn">Übernehmen</button></div>
+      </details>
+      <p class="fstatus" id="dataSt" role="status"></p>
+      <span class="sr" id="dataMeta"></span>
+      <button type="button" class="srow link danger" id="lgOut" hidden><span class="sl">Abmelden<small id="lgMail2"></small></span></button>
+    </section>
+    <details class="sgrp verd" id="verBox"><summary><span class="ft">Version</span><span class="fm" id="verMeta"></span></summary><ul class="verl" id="verList"></ul></details>
+  </div>
+  <div class="sh-body" id="setPlan" hidden>
+    <div class="pltabs" id="plTabs" role="tablist"></div>
+    <p class="plmeta" id="plMeta"></p>
+    <ol class="pllist" id="plList"></ol>
+    <div class="frow"><button type="button" class="btn ghost" id="plAdd">+ Übung hinzufügen</button></div>
+    <button type="button" class="linkbtn" id="plReset">Standard wiederherstellen</button>
+  </div>
+</div>
+<div class="sheet pick" id="pickSheet" hidden role="dialog" aria-modal="true" aria-labelledby="pickT">
+  <div class="sh-head"><span></span><h2 id="pickT">Übung wählen</h2><button type="button" class="sh-x" id="pickX" aria-label="Schließen">✕</button></div>
+  <div class="sh-body">
+    <div class="seg2 pkmode" id="pkMode" hidden role="group" aria-label="Wie lange"><button type="button" data-v="today">Nur heute</button><button type="button" data-v="always">Immer</button></div>
+    <button type="button" class="srow link" id="pkSkip" hidden><span class="sl">Heute weglassen</span></button>
+    <div id="pkList"></div>
+  </div>
+</div>
 <div class="toast" id="toast" hidden role="status" aria-live="polite"></div>
 <p class="sr" id="live" aria-live="polite"></p>
 
