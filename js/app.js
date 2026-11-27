@@ -45,7 +45,7 @@
   // Reihenfolge für maximales Wachstum: große Grundübungen zuerst (frisch, schwer), dann Isolation mit Dropsätzen, Arme und Waden zum Schluss.
   // Dropsätze nur bei Maschinen-/Isolationsübungen, direkt nach dem letzten Satz ohne Pause.
   var PLANS = {
-    full:["beinpresse","beinbeuger","brustpresse","latzug","rudern","butterfly","seitheben","reverse_fly","hammer","trizeps_oh","rope","waden","reverse"],
+    full:["beinpresse","beinbeuger","brustpresse","latzug","rudern","butterfly","seitheben","reverse_fly","hammer","rope","waden","reverse"],
     fullA:["beinpresse","beinbeuger","brustpresse","latzug","seitheben","reverse_fly","hammer","rope","waden","reverse"],
     fullB:["beinbeuger","beinstrecker","schulterpresse","rudern","butterfly","seitheben","reverse_fly","hammer","trizeps_oh","bauch"],
     fullC:["beinpresse","brustpresse","latzug","rudern","seitheben","reverse_fly","preacher","rope","waden","reverse"],
@@ -510,7 +510,7 @@
     kgEl.innerHTML = fmt(head) + "<small>kg</small>";
 
     var le = lastEntry(ex.id);
-    last.textContent = "";
+    last.textContent = le ? "Zuletzt (" + dateShort(le.date) + "): " + repsLine(le.e) : "";
     var why = $(".why", li); why.innerHTML = "";
     if (le){ var b = document.createElement("b"); b.textContent = sg.plateau ? "Deload: " + fmt(-sg.delta) + " kg weniger" : sg.delta > 0 ? "Ziel: +" + fmt(sg.delta) + " kg" : sg.delta < 0 ? "Ziel: " + fmt(-sg.delta) + " kg weniger" : sg.repDelta > 0 ? "Ziel: +" + sg.repDelta + " Wdh." : "Ziel: gleich halten"; why.appendChild(b);
       var wr = document.createElement("span"); wr.className = "whyr"; wr.textContent = sg.reason; why.appendChild(wr); }
@@ -554,8 +554,8 @@
     }
     var isTrain = TRAIN_DAYS.indexOf(wd) >= 0;
     var dtT = dayType(t);
-    $("#dayTitle").textContent = isTrain ? "Trainingstag" : dtT === "rest1" ? "Aufbau-Tag" : "Ruhetag";
-    $("#daySub").textContent = isTrain ? "" : dtT === "rest1" ? "Deine Muskeln wachsen heute. Iss gut: 150 g Eiweiß und deine Kalorien." : dtT === "rest2" ? "2. Erholungstag: weiter gut essen. " + sub : sub;
+    $("#dayTitle").textContent = isTrain ? "Trainingstag" : dtT === "rest1" ? "Aufbau-Tag" : dtT === "rest2" ? "Erholung" : "Ruhetag";
+    $("#daySub").textContent = isTrain ? "" : dtT === "rest1" ? "Deine Muskeln wachsen heute. Iss gut: 150 g Eiweiß und deine Kalorien." : dtT === "rest2" ? "Weiter gut essen. " + sub : sub;
     var done = 0;
     PLAN.forEach(function(ex){
       var te = todayEntry(ex.id), s = $('#segbar span[data-id="' + ex.id + '"]');
@@ -654,6 +654,9 @@
     var h = '<div class="khead"><h2>' + (L.id === todayId() ? "Heutiges Training" : "Letztes Training") + '</h2><span class="fm">' + dateShort(L.id) + '</span></div>';
     h += '<div class="vchips">' + (st.min ? '<span><b>' + hm(st.min).replace(/ (h|min)$/, "") + '</b> ' + (st.min >= 60 ? "h" : "min") + '</span>' : '') + '<span><b>' + st.ex + '</b> Übungen</span><span><b>' + st.sets + '</b> Sätze</span><span><b>' + Math.round(st.vol).toLocaleString("de-DE") + '</b> kg' + (vtr && vtr.cls !== "new" ? ' <em class="' + vtr.cls + '">' + vtr.tx + '</em>' : '') + '</span></div>';
     var allNew = rows.every(function(r){ return r.tr.cls === "new"; }), prs = rows.filter(function(r){ return r.tr.cls === "pr"; }).length;
+    h += '<details class="vdet"><summary>Details</summary><ul class="vex">' + rows.map(function(r){
+      return '<li><div class="vn"><b>' + r.ex.name + '</b><span>' + repsLine(r.e) + '</span></div><span class="vt ' + r.tr.cls + '">' + r.tr.tx + '</span><div class="vnext ' + r.nt.cls + '">Nächstes Mal: <b>' + r.nt.tx + '</b></div></li>';
+    }).join("") + '</ul></details>';
     lt.innerHTML = h;
     // Progressive Overload je Übung
     var orows = ALLSTR.map(function(ex){
@@ -666,7 +669,10 @@
     else {
     var cUp = orows.filter(function(r){ return r.tr.cls === "up" || r.tr.cls === "pr"; }).length, cSame = orows.filter(function(r){ return r.tr.cls === "same"; }).length, cDown = orows.filter(function(r){ return r.tr.cls === "down"; }).length, cNew = orows.filter(function(r){ return r.tr.cls === "new"; }).length;
     var best = orows.filter(function(r){ return r.vals.length > 1; }).map(function(r){ return {n:r.ex.name, p:(r.vals[r.vals.length - 1] - r.vals[0]) / r.vals[0] * 100}; }).sort(function(a, b){ return b.p - a.p; })[0];
-    ov.innerHTML = '<div class="vchips big"><span class="up"><b>' + cUp + '</b> stärker</span><span><b>' + cSame + '</b> gleich</span><span class="down"><b>' + cDown + '</b> weniger</span>' + (cNew ? '<span><b>' + cNew + '</b> neu</span>' : '') + '</div>' + (best && best.p > 0.5 ? '<p class="vbest">Größter Sprung: <b>' + best.n + '</b> +' + f1(best.p) + ' %</p>' : '');
+    var odet = '<details class="vdet"><summary>Alle Übungen</summary><ul class="ovl">' + orows.map(function(r){
+      return '<li><div class="on"><b>' + r.ex.name + '</b><span>' + fmt(r.top) + ' kg · ' + r.n + (r.n === 1 ? ' Training' : ' Trainings') + '</span></div>' + spark(r.vals) + '<span class="vt ' + r.tr.cls + '">' + r.tr.tx + '</span><div class="vnext ' + r.nt.cls + '">Ziel: <b>' + r.nt.tx + '</b></div></li>';
+    }).join("") + '</ul></details>';
+    ov.innerHTML = '<div class="vchips big"><span class="up"><b>' + cUp + '</b> stärker</span><span><b>' + cSame + '</b> gleich</span><span class="down"><b>' + cDown + '</b> weniger</span>' + (cNew ? '<span><b>' + cNew + '</b> neu</span>' : '') + '</div>' + (best && best.p > 0.5 ? '<p class="vbest">Größter Sprung: <b>' + best.n + '</b> +' + f1(best.p) + ' %</p>' : '') + odet;
     $("#ovlMeta").textContent = "seit " + dateShort(OVL_FROM);
     }
     wrap.innerHTML = "";
@@ -1831,8 +1837,9 @@
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "3.2", APP_BUILT = "2026-11-27T08:04:18Z";
+  var APP_VERSION = "3.3", APP_BUILT = "2026-11-27T08:09:57Z";
   var CHANGES = [
+    ["3.3", "Trizeps über Kopf raus (Zeit), Details zu Übungen und Werten aufklappbar"],
     ["3.2", "Aufbau-Tag nach dem Training markiert, Heute im Diagramm ab 18 Uhr, Übungen am Ruhetag aufklappbar"],
     ["3.1", "Unterarme: Hammer Curls mit Drop statt Preacher, Reverse Curls als Superset mit Waden"],
     ["3.0", "Neuer Plan für mehr Wachstum: Beinbeuger dazu, Dropsätze bei Isolationsübungen, sinnvolle Reihenfolge. Alte Daten (29.10.–02.11.) übernommen."],

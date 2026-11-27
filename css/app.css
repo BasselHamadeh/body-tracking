@@ -1175,9 +1175,12 @@ body.tm .bodyrow .body{max-height:124px !important}
 .tdn{font-size:13px;color:var(--muted);margin:6px 0 0}
 body.tm .view[data-name="training"]{padding-top:calc(env(safe-area-inset-top,0px) + 92px) !important}
 body.tm .ex-head{padding-top:8px !important}
-body:not(.tm) #exlist .ex-head{pointer-events:none;cursor:default}
+body:not(.tm) #exlist .ex-head{cursor:pointer}
 body:not(.tm) #exlist .ex-state{display:none}
-body:not(.tm) #exlist .ex-body{display:none !important}
+body:not(.tm) #exlist .ex-body .sets{pointer-events:none}
+body:not(.tm) #exlist .ex-body .srate,body:not(.tm) #exlist .ex-body .actions{display:none !important}
+body:not(.tm) #exlist .setrow{grid-template-columns:54px 1fr 12px 1fr !important}
+body:not(.tm) #exlist .ex.done.open{opacity:1}
 body:not(.tm) #exlist .ex.done .ex-head{opacity:1}
 .verl{list-style:none;margin:0;padding:0}
 .verl li{display:grid;grid-template-columns:44px 1fr;gap:8px;padding:6px 0;border-top:1px solid var(--line);font-size:14px}
@@ -1343,3 +1346,9 @@ body:not(.tm) #exlist .ex.done .ex-state{display:block !important}
 #exWrap.restlist .exh::after{content:"";width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:translateY(-2px) rotate(45deg);margin-left:10px}
 #exWrap.restlist:not(.collapsed) .exh::after{transform:translateY(2px) rotate(-135deg)}
 #exWrap.collapsed #exlist{display:none}
+.last{margin:4px 0 8px !important;font-size:13.5px !important;color:var(--muted)}
+.vdet{margin:12px 0 0;border-top:1px solid var(--line);padding-top:4px}
+.vdet>summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-weight:600;font-size:14.5px;color:var(--blue)}
+.vdet>summary::-webkit-details-marker{display:none}
+.vdet>summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--blue);border-bottom:2px solid var(--blue);transform:translateY(-2px) rotate(45deg)}
+.vdet[open]>summary::after{transform:translateY(2px) rotate(-135deg)}
