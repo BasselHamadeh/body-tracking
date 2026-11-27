@@ -430,7 +430,7 @@
   }
   function metaText(ex){
     if (ex.kind === "time") return ex.target;
-    var mp = MUSCLES[ex.id] && MUSCLES[ex.id].p[0] ? " · " + MNAMES[MUSCLES[ex.id].p[0]] : "";
+    var mpl = MUSCLES[ex.id] ? MUSCLES[ex.id].p : [], mp = mpl.indexOf("chest_u") >= 0 && mpl.indexOf("chest_l") >= 0 ? " · Brust" : mpl[0] ? " · " + MNAMES[mpl[0]] : "";
     return ex.sets + " × " + ex.reps[0] + "–" + ex.reps[1] + (ex.drop ? " + Drop" : "") + (partnerOf(ex) ? " · Superset" : "") + mp;
   }
   function infoText(ex){
@@ -553,8 +553,9 @@
       else sub = "";
     }
     var isTrain = TRAIN_DAYS.indexOf(wd) >= 0;
-    $("#dayTitle").textContent = isTrain ? "Trainingstag" : "Ruhetag";
-    $("#daySub").textContent = isTrain ? "" : sub;
+    var dtT = dayType(t);
+    $("#dayTitle").textContent = isTrain ? "Trainingstag" : dtT === "rest1" ? "Aufbau-Tag" : "Ruhetag";
+    $("#daySub").textContent = isTrain ? "" : dtT === "rest1" ? "Deine Muskeln wachsen heute. Iss gut: 150 g Eiweiß und deine Kalorien." : dtT === "rest2" ? "2. Erholungstag: weiter gut essen. " + sub : sub;
     var done = 0;
     PLAN.forEach(function(ex){
       var te = todayEntry(ex.id), s = $('#segbar span[data-id="' + ex.id + '"]');
@@ -564,14 +565,15 @@
     $("#ringFg").style.strokeDashoffset = (163.36 * (1 - done / PLAN.length)).toFixed(1);
     $(".ring").hidden = !isTrain; $("#segbar").hidden = !isTrain; $(".legend").hidden = !isTrain; $("#ttrack").hidden = !isTrain; var sb0 = $("#tmStart"); if (sb0){ var tt0 = trState(); sb0.hidden = !isTrain || !!(tt0 && tt0.e && (Date.parse(tt0.e) - Date.parse(tt0.s)) >= 300000); } var tb0 = $("#tmTest"); if (tb0) tb0.hidden = isTrain; renderTrack(); autoStop();
     var exWrap = $("#exWrap"), showBtn = $("#showEx"), tt1 = trState(), finished = !!(tt1 && tt1.e && (Date.parse(tt1.e) - Date.parse(tt1.s)) >= 300000);
-    exWrap.hidden = !isTrain; showBtn.hidden = true;
+    exWrap.hidden = false; showBtn.hidden = true;
+    exWrap.classList.toggle("collapsed", !isTrain && !exShown); exWrap.classList.toggle("restlist", !isTrain);
     $("#tmAny").hidden = true;
     var wc = $("#weighCard"); if (wc){ var bl = sessions.filter(function(x){ return x.bw > 0 && x.id <= todayId(); }).sort(function(a, b){ return a.id < b.id ? 1 : -1; }); wc.hidden = !(new Date().getDay() === WEIGH_DAY && (!bl.length || weighDue(bl[0].id)) && !document.body.classList.contains("tm")); }
     var tsE = todaySession(), hasE = !!(tsE && isRealSession(tsE)), openR = PLAN.filter(function(ex){ var e = todayEntry(ex.id); return e && !exDoneEntry(ex, e); }).length;
     var eb = $("#tmEdit"); eb.hidden = true;
     eb.textContent = openR ? "⭐ Heutiges Training bewerten (" + openR + " offen)" : "✎ Heutiges Training ansehen / ändern";
     eb.classList.toggle("todo", openR > 0);
-    $("#exHead").textContent = isTrain ? "Heute · " + planName() + " · " + STRENGTH.length + " Übungen" : (sub ? sub + " · " : "") + planName();
+    $("#exHead").textContent = isTrain ? "Heute · " + planName() + " · " + STRENGTH.length + " Übungen" : "Übungen fürs nächste Training";
     renderSleep(); renderScores(); renderFocus();
   }
 
@@ -882,6 +884,7 @@
   setInterval(function(){ var t = trState(); if (t && !t.e) renderTrack(); }, 1000);
   var exShown = false;
   $("#showEx").addEventListener("click", function(){ exShown = !exShown; renderDay(); });
+  $("#exHead").addEventListener("click", function(){ if ($("#exWrap").classList.contains("restlist")){ exShown = !exShown; renderDay(); } });
   var noteDirty = false;
   function renderNote(){
     var ta = $("#noteText"); if (document.activeElement === ta || noteDirty) return;
@@ -1702,13 +1705,17 @@
     var c = $("#weekCard"); if (c){ c.hidden = !txt; $("#weekTxt").textContent = txt; }
     var v = $("#wkSum"); if (v) v.textContent = txt;
   }
+  // Tagesart: Training, 1. Tag danach (Aufbau-Tag, am wichtigsten fürs Essen), 2. Tag danach, sonst Ruhetag
+  function addDays(id, n){ var d = dateOf(id); d.setDate(d.getDate() + n); return dayId(d); }
+  function trainedOn(id){ var x = sessionById(id); return !!(x && isRealSession(x)); }
+  function dayType(id){ if (trainedOn(id)) return "train"; if (trainedOn(addDays(id, -1))) return "rest1"; if (trainedOn(addDays(id, -2))) return "rest2"; return "rest"; }
   function renderToday(t){
     var box = $("#todayStats"); if (!box) return;
     var wg = waterGoal(), tile = function(label, val, pc, cls){ return '<div class="st' + (cls ? " " + cls : "") + '"><span class="sl">' + label + '</span><b>' + val + '</b><i class="bar"><i class="' + (pc >= 100 ? "full" : "") + '" style="width:' + Math.min(100, Math.max(0, pc)).toFixed(0) + '%"></i></i></div>'; };
     box.innerHTML = tile("Kalorien", t.kcal.toLocaleString("de-DE"), t.kcal / GOAL_KCAL * 100) + tile("Eiweiß", t.prot + " g", t.prot / GOAL_PROT * 100, "p") + tile("Wasser", liters(t.ml), t.ml / wg * 100, "w") + tile("Schlaf", t.sl ? hrs(t.sl.min) : "–", t.sl ? sleepScore(t.sl.min) * 10 : 0, "s");
     var ts = todaySession(), done = PLAN.filter(function(ex){ return exDoneEntry(ex, todayEntry(ex.id)); }).length, any = ts && isRealSession(ts);
     var line = t.isTrain || any ? (done >= PLAN.length ? "💪 Training komplett" : any ? "🏋️ Training: " + done + " von " + PLAN.length + " Übungen" : "🏋️ Training noch offen") : "😌 Ruhetag";
-    $("#todayLine").textContent = line;
+    var tl = $("#todayLine"); tl.textContent = t.isTrain || any ? line : ""; tl.hidden = !tl.textContent;
     $("#tdMeta2").textContent = dateOf(todayId()).toLocaleDateString("de-DE", {weekday:"long", day:"numeric", month:"long"});
   }
   function renderScores(){
@@ -1737,7 +1744,7 @@
       var yId = dayId(yDt), yd = rw.filter(function(x){ return x.id === yId; })[0], ely = $("#wkYest");
       if (ely){
         if (yd && yd.r.has){
-          var yp = [yd.r.isTrain ? "💪 trainiert" : "😌 Ruhetag", "🔥 " + yd.r.kcal.toLocaleString("de-DE") + " kcal", "🥩 " + yd.r.prot + " g"];
+          var yp = [trainedOn(yId) ? "💪 trainiert" : dayType(yId) === "rest1" ? "🍽 Aufbau-Tag" : "😌 Ruhetag", "🔥 " + yd.r.kcal.toLocaleString("de-DE") + " kcal", "🥩 " + yd.r.prot + " g"];
           if (yd.r.sl) yp.push("😴 " + f1(sleepScore(yd.r.sl.min)) + "/10");
           ely.textContent = "Gestern: " + yp.join("  ·  ");
         } else ely.textContent = "";
@@ -1747,15 +1754,16 @@
     $("#wkK").textContent = aK ? aK.toLocaleString("de-DE") : fallbk; $("#wkKb").style.width = Math.min(100, aK / GOAL_KCAL * 100) + "%";
     $("#wkP").textContent = aP ? aP + " g" : fallbk; $("#wkPb").style.width = Math.min(100, aP / GOAL_PROT * 100) + "%";
     $("#wkS").textContent = aS !== null ? f1(aS) + "/10" : fallbk; $("#wkSb").style.width = (aS !== null ? aS * 10 : 0) + "%";
-    var maxP = Math.max(160, Math.max.apply(null, rs.map(function(x){ return x.r.prot; })));
+    var cdays = new Date().getHours() >= 18 ? rs : rw;
+    var maxP = Math.max(160, Math.max.apply(null, cdays.map(function(x){ return x.r.prot; })));
     $("#wkGoal").style.bottom = "calc(24px + (100% - 42px) * " + (GOAL_PROT / maxP).toFixed(3) + ")";
     var ch = $("#wkChart"); ch.innerHTML = "";
-    rs.forEach(function(x){
+    cdays.forEach(function(x){
       var col = document.createElement("div"); col.className = "bcol" + (x.id === todayId() ? " today" : "");
       var pr = x.r.prot, bar = document.createElement("i"); bar.className = "bar " + (!pr ? "none" : pr >= GOAL_PROT - 10 ? "good" : pr >= GOAL_PROT * 0.7 ? "mid" : "low");
       bar.style.height = pr ? "max(4px, calc((100% - 42px) * " + (pr / maxP).toFixed(3) + "))" : "4px"; bar.title = pr + " g Eiweiß";
       var bv = document.createElement("span"); bv.className = "bv"; bv.textContent = pr ? String(pr) : ""; col.appendChild(bv);
-      var trd = isRealSession(sessionById(x.id) || {}), lb = document.createElement("span"); lb.className = "bcl" + (trd ? " trd" : ""); lb.textContent = x.id === todayId() ? "Heute" : dateOf(x.id).toLocaleDateString("de-DE", {weekday:"short"}).replace(".", "");
+      var dt = dayType(x.id), lb = document.createElement("span"); lb.className = "bcl" + (dt === "train" ? " trd" : dt === "rest1" ? " r1" : dt === "rest2" ? " r2" : ""); lb.textContent = x.id === todayId() ? "Heute" : dateOf(x.id).toLocaleDateString("de-DE", {weekday:"short"}).replace(".", "");
       col.dataset.id = x.id; col.setAttribute("role", "button"); col.addEventListener("click", function(){ hlDay(x.id); });
       col.appendChild(bar); col.appendChild(lb); ch.appendChild(col);
     });
@@ -1823,8 +1831,9 @@
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "3.1", APP_BUILT = "2026-11-27T07:59:21Z";
+  var APP_VERSION = "3.2", APP_BUILT = "2026-11-27T08:04:18Z";
   var CHANGES = [
+    ["3.2", "Aufbau-Tag nach dem Training markiert, Heute im Diagramm ab 18 Uhr, Übungen am Ruhetag aufklappbar"],
     ["3.1", "Unterarme: Hammer Curls mit Drop statt Preacher, Reverse Curls als Superset mit Waden"],
     ["3.0", "Neuer Plan für mehr Wachstum: Beinbeuger dazu, Dropsätze bei Isolationsübungen, sinnvolle Reihenfolge. Alte Daten (29.10.–02.11.) übernommen."],
     ["2.9", "Wiegen dienstags vor dem Training, Steigerung zählt ab dem nächsten Training, Tageswert entfernt"],
