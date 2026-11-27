@@ -1547,3 +1547,6 @@ body.tmhang .hgnext{display:block}
 .favtop .linkbtn{margin-left:auto}
 .favtop:has(#favQ[hidden]):has(#favEdit[hidden]){display:none}
 body.tmhang #tmN{font-size:15px;white-space:nowrap}
+
+/* iPhone: kein Zoom durch Doppeltippen */
+html,body,button,a,input,select,textarea,label,summary{touch-action:manipulation}

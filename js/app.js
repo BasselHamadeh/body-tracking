@@ -2272,8 +2272,9 @@
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "4.1", APP_BUILT = "2026-11-27T13:33:19Z";
+  var APP_VERSION = "4.2", APP_BUILT = "2026-11-27T13:37:41Z";
   var CHANGES = [
+    ["4.2", "iPhone: kein Zoom mehr durch Doppeltippen, Hochformat, Vibrations-Einstellung raus"],
     ["4.1", "Aufgeräumt: Heute, Muskeln, Rekorde und Maße raus, Notiz und Tauschen aus der Übung raus (Tauschen nur in den Einstellungen). Neuer kurzer Pausen-Ton, Musik läuft weiter. Dead Hang als erster Schritt nach „Training starten“. Bewertungen ohne Emojis, kg und Wdh. mittig, Schnell hinzufügen unter Heute gegessen und zugeklappt."],
     ["4.0", "Einstellungen (Zahnrad): Ziele, Limits, Pausen, Töne, Wiegetag, Design, Schriftgröße. Plan selbst anpassen, Übung tauschen (auch nur heute), Notiz pro Übung, Rekord-Meldung. Neue Muskelbilder, Muskeln pro Woche und Rekorde im Verlauf, Maße und Zielgewicht, Essen nachträglich ändern. Sicherung als Datei und automatisch, startet offline, eigene Schriften, strengere Sicherheitsregeln."],
     ["3.9", "Rückmeldungen nach dem Eintragen zeigen, was noch fehlt, und feiern erreichte Ziele; Legende im Verlauf ohne Wochentage"],
@@ -3298,6 +3299,8 @@
   if (lkIn) lkIn.addEventListener("change", function(){ try { localStorage.setItem(LOCK_KEY, lkIn.checked ? "1" : "0"); } catch (e) {} audioMode(); if (!lkIn.checked) lockStop(); else if (tState && !tState.over) lockPlay(); toast(lkIn.checked ? "An: Ton auch gesperrt, Musik stoppt dabei" : "Aus: Musik läuft weiter"); });
   buildList(); showView(); keyFolds(); applyFolds(); renderTDays(); renderMeals(TRAIN_DAYS.indexOf(new Date().getDay()) >= 0 ? "train" : "rest"); renderTraining(); renderFood(); renderWater(); applyDrafts(); restoreOpen(); restoreTimer(); restoreTm();
   booted = true; renderSettings();
+  // iPhone: Zoomen per Zwei-Finger-Geste verhindern (Doppeltippen verhindert das CSS)
+  ["gesturestart", "gesturechange"].forEach(function(t){ document.addEventListener(t, function(e){ e.preventDefault(); }, {passive:false}); });
   // Offline-Hülle (nur auf der echten Seite per HTTPS)
   try { if ("serviceWorker" in navigator && location.protocol === "https:") window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); }); } catch (e) {}
   setInterval(renderScores, 60000);
