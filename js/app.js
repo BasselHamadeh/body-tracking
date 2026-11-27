@@ -556,8 +556,8 @@
       '<span class="x" aria-hidden="true">×</span>' +
       '<label class="num"><input class="' + (cls ? "d-reps" : "s-reps") + '"' + (i !== null ? ' data-i="' + i + '"' : '') + ' inputmode="numeric" autocomplete="off" placeholder="' + ph + '" aria-label="' + repLabel + '"></label><button type="button" class="srate" data-r="" aria-label="Bewertung ' + label + '">Fertig</button><div class="rchips" role="group" aria-label="Wie nah am Limit war der Satz?"><button type="button" data-r="easy">Locker</button><button type="button" data-r="leicht">Mittel</button><button type="button" data-r="passt">Ziel genau</button><button type="button" data-r="hart">Sehr hart</button><button type="button" data-r="limit">Am Limit</button><button type="button" data-r="fail">Über Limit</button></div></div>';
   }
-  var RATE_EMO = {easy:"😴", leicht:"🙂", passt:"💪", hart:"😤", vhart:"🥵", limit:"🔥", fail:"💀"}, RATE_SHORT = {easy:"Leicht", leicht:"Leicht", passt:"Richtig", hart:"Schwer", vhart:"Sehr", limit:"Limit", fail:"Über"};
-  function setSR(btn, r){ btn.dataset.r = r || ""; btn.textContent = r ? RATE_EMO[r] + " " + RATE_SHORT[r] : "Fertig"; btn.setAttribute("aria-label", r ? "Bewertung: " + RATINGS[r] + ". Tippen zum Ändern" : "Satz fertig"); var rw = btn.closest(".setrow"); if (rw){ rw.classList.toggle("done", !!r); $$(".rchips button", rw).forEach(function(c){ c.classList.toggle("on", c.dataset.r === r); }); } btn.className = "srate" + (r ? " r-" + r : ""); }
+  var RATE_SHORT = {easy:"Leicht", leicht:"Leicht", passt:"Richtig", hart:"Schwer", vhart:"Sehr schwer", limit:"Limit", fail:"Über Limit"};
+  function setSR(btn, r){ btn.dataset.r = r || ""; btn.textContent = r ? RATE_SHORT[r] : "Fertig"; btn.setAttribute("aria-label", r ? "Bewertung: " + RATINGS[r] + ". Tippen zum Ändern" : "Satz fertig"); var rw = btn.closest(".setrow"); if (rw){ rw.classList.toggle("done", !!r); $$(".rchips button", rw).forEach(function(c){ c.classList.toggle("on", c.dataset.r === r); }); } btn.className = "srate" + (r ? " r-" + r : ""); }
   function nextSetLabel(ex, li, i){ var k = $$(".s-kg", li)[i + 1], rp = $$(".s-reps", li)[i + 1]; return ex.name + " · Satz " + (i + 2) + (k && k.value ? " · " + k.value + " kg" : "") + (rp && rp.placeholder ? " × " + rp.placeholder : ""); }
   function nextExLabel(nx){ var nli = $('.ex[data-id="' + nx.id + '"]'), k = nli && $(".s-kg", nli), rp = nli && $(".s-reps", nli); return "Weiter: " + nx.name + (k && k.value ? " · " + k.value + " kg" : "") + (rp && rp.placeholder ? " × " + rp.placeholder : ""); }
   function bestRun(f){ var b = null; sessions.forEach(function(s){ if (!isTrainId(s.id)) return; var e = s.entries && s.entries.rennen, v = e ? clean(e[f]) : null; if (v !== null && (b === null || v > b)) b = v; }); return b; }
@@ -566,7 +566,7 @@
     var rows = '<div class="setrow head" aria-hidden="true"><span></span><span>kg</span><span></span><span>Wdh.</span><span></span></div>';
     for (var i = 0; i < ex.sets; i++) rows += setRow("", "Satz " + (i + 1), i, "Satz " + (i + 1) + " Gewicht", "Satz " + (i + 1) + " Wiederholungen", ex.pr[i]);
     if (ex.drop) rows += setRow("drop", "Drop", null, "Dropsatz Gewicht", "Dropsatz Wiederholungen", ex.dropPr);
-    return '<div class="bodyrow"><span class="pz l">' + restOf(ex) + ' s<br>Pause</span>' + bodySVG(ex.id) + '<span class="pz mz">' + musclesHtml(ex.id) + '</span></div><div class="exx"><button type="button" class="exnb"><span aria-hidden="true">📝</span><span class="exnt">Notiz</span></button><button type="button" class="exsw"><span aria-hidden="true">⇄</span> Tauschen</button></div><p class="last"></p><p class="why"></p><div class="sets">' + rows + '</div>' +
+    return '<div class="bodyrow"><span class="pz l">' + restOf(ex) + ' s<br>Pause</span>' + bodySVG(ex.id) + '<span class="pz mz">' + musclesHtml(ex.id) + '</span></div><p class="last"></p><p class="why"></p><div class="sets">' + rows + '</div>' +
 ''
   }
   function timeBody(ex){
@@ -623,7 +623,6 @@
 
     var le = lastEntry(ex.id);
     last.textContent = ""; last.hidden = true;
-    var nt = $(".exnt", li); if (nt){ var note = PREFS.notes[ex.id] || ""; nt.textContent = note || "Notiz"; nt.parentNode.classList.toggle("has", !!note); nt.parentNode.setAttribute("aria-label", note ? "Notiz ändern: " + note : "Notiz hinzufügen, z. B. Sitzeinstellung"); }
     var why = $(".why", li); why.innerHTML = "";
     if (le){ var b = document.createElement("b"); b.textContent = sg.plateau ? "Deload: " + fmt(-sg.delta) + " kg weniger" : sg.delta > 0 ? "Ziel: +" + fmt(sg.delta) + " kg" : sg.delta < 0 ? "Ziel: " + fmt(-sg.delta) + " kg weniger" : sg.repDelta > 0 ? "Ziel: +" + sg.repDelta + " Wdh." : "Ziel: gleich halten"; why.appendChild(b);
       var wr = document.createElement("span"); wr.className = "whyr"; wr.textContent = sg.reason; why.appendChild(wr); }
@@ -682,7 +681,7 @@
     exWrap.classList.toggle("collapsed", !isTrain && !exShown); exWrap.classList.toggle("restlist", !isTrain);
     $("#tmAny").hidden = true;
     var wc = $("#weighCard"); if (wc){ var bl = sessions.filter(function(x){ return x.bw > 0 && x.id <= todayId(); }).sort(function(a, b){ return a.id < b.id ? 1 : -1; }); wc.hidden = !(new Date().getDay() === WEIGH_DAY && (!bl.length || weighDue(bl[0].id)) && !document.body.classList.contains("tm")); var wgT = $("#wgT"); if (wgT && WEIGH_DAY >= 0) wgT.textContent = "⚖️ " + DAYLONG[WEIGH_DAY] + ": " + (isTrain ? "vor dem Training wiegen" : "heute wiegen"); }
-    renderHang(isTrain);
+    renderHang();
     var tsE = todaySession(), hasE = !!(tsE && isRealSession(tsE)), openR = PLAN.filter(function(ex){ var e = todayEntry(ex.id); return e && !exDoneEntry(ex, e); }).length;
     var eb = $("#tmEdit"); eb.hidden = true;
     eb.textContent = openR ? "⭐ Heutiges Training bewerten (" + openR + " offen)" : "✎ Heutiges Training ansehen / ändern";
@@ -717,10 +716,11 @@
   }
   function hm(min){ var h = Math.floor(min / 60), m = min % 60; return h ? h + ":" + pad(m) + " h" : m + " min"; }
   function parseDur(t){ t = String(t || "").trim().toLowerCase(); var m = /^(\d{1,2})\s*(?:[:.h]|std)\s*(\d{1,2})?\s*(?:m|min)?$/.exec(t); if (m) return Number(m[1]) * 60 + Number(m[2] || 0); m = /^(\d{1,3})\s*(?:m|min)?$/.exec(t); return m ? Number(m[1]) : null; }
+  function rdot(r){ return r && RATINGS[r] ? '<i class="rdot r-' + r + '" title="' + RATINGS[r] + '"></i>' : ""; }
   function repsLine(e){ var st = entrySets(e).filter(function(x){ return x.reps > 0; }); if (!st.length) return ""; var k0 = st[0].kg, same = st.every(function(x){ return x.kg === k0; });
-    var em = function(x){ return x.rating && RATE_EMO[x.rating] ? RATE_EMO[x.rating] : ""; };
+    var em = function(x){ return rdot(x.rating); };
     var t = same ? fmt(k0) + " kg · " + st.map(function(x){ return x.reps + em(x); }).join(" / ") : st.map(function(x){ return fmt(x.kg) + "×" + x.reps + em(x); }).join(", ");
-    var dk = cleanKg(e.dropKg), dr = clean(e.dropReps), drr = rating(e.dropRating); if (dk && dr) t += " + Drop " + fmt(dk) + "×" + dr + (drr ? RATE_EMO[drr] : ""); return t; }
+    var dk = cleanKg(e.dropKg), dr = clean(e.dropReps), drr = rating(e.dropRating); if (dk && dr) t += " + Drop " + fmt(dk) + "×" + dr + rdot(drr); return t; }
   function nextTarget(ex, e, date){
     var sg = suggest(ex, {e:e, date:date}), k = sg.sets[0], r = sg.reps[0];
     var cls = sg.plateau ? "deload" : sg.delta > 0 ? "up" : sg.delta < 0 ? "down" : sg.repDelta > 0 ? "rep" : "same";
@@ -752,57 +752,7 @@
       return {ex:ex, e:e, tr:tr, nt:nt};
     });
   }
-  // Sätze pro Muskel in den letzten 7 Tagen (Hilfsmuskeln zählen halb, Dropsatz halb)
-  var MUSG = [["Brust", ["chest_u", "chest_l"]], ["Rücken", ["lats", "traps_m"]], ["Nacken", ["traps_u"]], ["Vordere Schulter", ["delts_f"]], ["Seitliche Schulter", ["delts_s"]], ["Hintere Schulter", ["delts_b"]], ["Bizeps", ["biceps", "brach"]], ["Trizeps", ["triceps"]], ["Unterarme", ["brachiorad", "forearm_f", "forearm_e"]], ["Bauch", ["abs", "obl"]], ["Unterer Rücken", ["lower_back"]], ["Po", ["glutes"]], ["Oberschenkel", ["quads"]], ["Beinbeuger", ["hams"]], ["Adduktoren", ["adductors"]], ["Waden", ["calves"]]];
-  function weekSets(){
-    var from = addDays(todayId(), -6), t = todayId(), per = {}, n = 0;
-    trainSessions().forEach(function(x){
-      if (x.id < from || x.id > t) return; n++;
-      ALLSTR.forEach(function(ex){
-        if (!entryOk(ex, x) || !MUSCLES[ex.id]) return;
-        var e = x.entries[ex.id], c = entrySets(e).filter(function(z){ return z.reps > 0; }).length + (cleanKg(e.dropKg) && clean(e.dropReps) ? 0.5 : 0);
-        MUSCLES[ex.id].p.forEach(function(k){ per[k] = (per[k] || 0) + c; }); MUSCLES[ex.id].s.forEach(function(k){ per[k] = (per[k] || 0) + c * 0.5; });
-      });
-    });
-    return {per:per, n:n};
-  }
-  function setLvl(v){ return v <= 0 ? 0 : v < 5 ? 1 : v < 10 ? 2 : v <= 20 ? 3 : 4; }
-  var LVLN = ["", "wenig", "okay", "gut", "sehr viel"];
-  function renderMuscleWeek(){
-    var card = $("#musCard"); if (!card) return;
-    card.hidden = !trainSessions().length; if (card.hidden) return;
-    var ws = weekSets(), map = {}, rows = MUSG.map(function(g){ var v = Math.max.apply(null, g[1].map(function(k){ return ws.per[k] || 0; })); return {n:g[0], v:Math.round(v * 2) / 2, ks:g[1]}; });
-    rows.forEach(function(r){ var l = setLvl(r.v); if (l) r.ks.forEach(function(k){ map[k] = "lv" + l; }); });
-    $("#musFig").innerHTML = fullBody({p:[], s:[], map:map}, "heat");
-    $("#musMeta").textContent = ws.n + (ws.n === 1 ? " Training" : " Trainings");
-    var good = rows.filter(function(r){ return setLvl(r.v) >= 3; }).map(function(r){ return r.n; }), low = rows.filter(function(r){ return setLvl(r.v) === 1; }).map(function(r){ return r.n; });
-    $("#musSum").textContent = !ws.n ? "In den letzten 7 Tagen noch kein Training." : [good.length ? "Gut trainiert: " + good.join(", ") : "", low.length ? "Wenig: " + low.join(", ") : ""].filter(Boolean).join(" · ") || "Alles im okay-Bereich.";
-    var ul = $("#musList"); ul.innerHTML = "";
-    rows.slice().sort(function(a, b){ return b.v - a.v; }).forEach(function(r){
-      var li = document.createElement("li"), a = document.createElement("span"), bar = document.createElement("i"), fill = document.createElement("i"), b = document.createElement("b");
-      a.textContent = r.n; bar.className = "msb"; fill.className = "lv" + setLvl(r.v); fill.style.width = Math.min(100, r.v / 20 * 100) + "%"; bar.appendChild(fill);
-      b.textContent = r.v ? fmt(r.v) + (r.v === 1 ? " Satz" : " Sätze") : "–"; b.className = "l" + setLvl(r.v); b.title = LVLN[setLvl(r.v)];
-      li.appendChild(a); li.appendChild(bar); li.appendChild(b); ul.appendChild(li);
-    });
-  }
-  function renderRecords(){
-    var ul = $("#recList"), box = $("#recBox"); if (!ul || !box) return;
-    var rows = ALLSTR.map(function(ex){
-      var best = null;
-      sessions.forEach(function(x){ if (!entryOk(ex, x)) return; entrySets(x.entries[ex.id]).forEach(function(z){ if (z.kg !== null && z.kg > 0 && z.reps > 0){ var v = e1(z.kg, z.reps); if (!best || v > best.v + 0.01) best = {v:v, kg:z.kg, reps:z.reps, d:x.id}; } }); });
-      return best ? {ex:ex, b:best} : null;
-    }).filter(Boolean).sort(function(a, b){ return a.b.d < b.b.d ? 1 : a.b.d > b.b.d ? -1 : a.ex.name.localeCompare(b.ex.name); });
-    box.hidden = !rows.length; $("#recMeta").textContent = rows.length ? rows.length + " Übungen" : "";
-    ul.innerHTML = "";
-    rows.forEach(function(r){
-      var li = document.createElement("li"), a = document.createElement("span"), n = document.createElement("b"), d = document.createElement("small"), v = document.createElement("span"), m = document.createElement("small");
-      n.textContent = r.ex.name; d.textContent = dateShort(r.b.d) + (r.b.d === todayId() ? " · heute 🏆" : ""); a.appendChild(n); a.appendChild(d);
-      v.className = "recv"; v.textContent = fmt(r.b.kg) + " kg × " + r.b.reps; m.textContent = "≈ " + fmt(Math.round(r.b.v * 2) / 2) + " kg max"; v.appendChild(m);
-      li.appendChild(a); li.appendChild(v); ul.appendChild(li);
-    });
-  }
   function renderHistory(){
-    renderMuscleWeek(); renderRecords();
     var list = trainSessions();
     var lt = $("#lastTr"), ov = $("#ovl"), wrap = $("#history");
     var weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 6); var wid = dayId(weekAgo);
@@ -895,6 +845,17 @@
         jobs.reduce(function(pr, j){ return pr.then(j); }, Promise.resolve()).catch(function(){});
       }, 0);
     }, function(){ oldImported = false; });
+  }
+  var accFixed = false;
+  function fixAccident(){
+    if (accFixed || !(mode === "db" || mode === "local") || (mode === "db" && !firstSync.tr)) return;
+    accFixed = true;
+    try { if (localStorage.getItem("fix-1127")) return; } catch (e) {}
+    var id = "2026-11-27", s0 = sessionById(id), done = function(){ try { localStorage.setItem("fix-1127", "1"); } catch (e) {} };
+    if (todayId() === id){ try { localStorage.removeItem("fit-tm"); localStorage.removeItem("fit-retro"); localStorage.removeItem(HSKEY); } catch (e) {} document.body.classList.remove("tm"); document.body.classList.remove("tmhang"); stopTimer(); tmUpdate(); }
+    if (!s0 || !s0.tr || isRealSession(s0)){ done(); return; }
+    var keep = s0.bw || s0.sl || s0.hang || s0.ms || (s0.note && s0.note.trim());
+    (keep ? saveSessionPatch({tr:null, entries:{}}, id) : deleteSession(id)).then(done, function(){ accFixed = false; });
   }
   var seeded = false;
   function seedToday(){
@@ -1101,20 +1062,22 @@
     saveSessionPatch({bw: Math.round(v * 10) / 10}).then(function(){ $("#bwIn").value = ""; bwToast(Math.round(v * 10) / 10); renderBW(); }).catch(function(e){ toast(errText(e)); });
   });
 
-  // ---------- Dead Hang (Stoppuhr vor dem Training) ----------
+  // ---------- Dead Hang: erster Schritt nach "Training starten" ----------
   function cleanHang(v){ var n = Number(v); return isFinite(n) && n >= 1 && n <= 900 ? Math.round(n) : null; }
-  var hang = null, hangIv = null;
+  var hang = null, hangIv = null, hangStep = false, hangAutoT = null, HSKEY = "fit-hangstep";
   function hangFmt(sec){ sec = Math.max(0, Math.floor(sec)); return sec >= 60 ? Math.floor(sec / 60) + ":" + pad(sec % 60) + " min" : sec + " s"; }
   function hangStats(){
     var t = todayId(), list = sessions.filter(function(x){ return x.hang > 0 && x.id <= t; }).sort(function(a, b){ return a.id < b.id ? 1 : -1; });
     var today = list.length && list[0].id === t ? list[0] : null, prev = list.filter(function(x){ return x.id !== t; });
     return {today: today ? today.hang : null, last: prev.length ? prev[0] : null, best: list.length ? Math.max.apply(null, list.map(function(x){ return x.hang; })) : null};
   }
-  function renderHang(isTrain){
+  function firstOpenIdx(){ for (var i = 0; i < PLAN.length; i++) if (!exDoneEntry(PLAN[i], todayEntry(PLAN[i].id))) return i; return 0; }
+  function renderHang(){
     var c = $("#hangCard"); if (!c) return;
-    var st = hangStats();
-    c.hidden = !((isTrain && PREFS.hang) || hang);
+    c.hidden = !(hangStep || hang); if (c.hidden) return;
+    var nx = PLAN[firstOpenIdx()]; $("#hgNext").textContent = nx ? "Danach: " + nx.name : "";
     if (hang) return;
+    var st = hangStats();
     $("#hgTime").textContent = st.today ? hangFmt(st.today) : "0 s";
     $("#hgBtn").textContent = st.today ? "Nochmal" : "Start";
     c.classList.toggle("done", !!st.today);
@@ -1124,62 +1087,36 @@
     $("#hgMeta").textContent = bits.length ? bits.join(" · ") : "So lange wie möglich hängen, dann stoppen.";
   }
   function hangTick(){ if (hang) $("#hgTime").textContent = hangFmt((Date.now() - hang.t0) / 1000); }
+  function hangWanted(){ return PREFS.hang && !hangStats().today; }
+  function hangStepOn(){
+    hangStep = true; document.body.classList.add("tmhang"); try { localStorage.setItem(HSKEY, todayId()); } catch (e) {}
+    $$(".ex.open").forEach(function(o){ setOpen(o, false); });
+    renderHang(); tmUpdate(); window.scrollTo(0, 0);
+  }
+  function hangStepOff(){ hangStep = false; clearTimeout(hangAutoT); document.body.classList.remove("tmhang"); try { localStorage.removeItem(HSKEY); } catch (e) {} renderHang(); }
+  function finishHang(){
+    if (!hang) return Promise.resolve(null);
+    var sec = Math.round((Date.now() - hang.t0) / 1000), c = $("#hangCard"); hang = null; clearInterval(hangIv); hangIv = null; c.classList.remove("run");
+    if (sec < 3){ toast("Zu kurz, nicht gespeichert."); renderHang(); return Promise.resolve(null); }
+    var st = hangStats(), best = st.best, keep = Math.max(sec, st.today || 0), rec = !!(best && sec > best);
+    $("#hgTime").textContent = hangFmt(sec);
+    return saveSessionPatch({hang: keep}).then(function(){ toast(rec ? "Neue Bestzeit: " + hangFmt(sec) : hangFmt(sec) + " gespeichert", rec); renderHang(); return sec; })
+      .catch(function(e){ toast(errText(e)); renderHang(); return null; });
+  }
+  function hangContinue(){ var go = function(){ hangStepOff(); tmGo(firstOpenIdx()); }; if (hang) finishHang().then(go); else go(); }
   $("#hgBtn").addEventListener("click", function(){
     var b = $("#hgBtn"), c = $("#hangCard");
     if (!hang){
-      ensureAudio(); startBeep();
+      clearTimeout(hangAutoT); ensureAudio(); startBeep();
       hang = {t0: Date.now()}; c.classList.add("run"); b.textContent = "Stopp"; $("#hgMeta").textContent = "Läuft … tippe auf Stopp, wenn du loslässt.";
       clearInterval(hangIv); hangIv = setInterval(hangTick, 200); hangTick(); keepAwake(); return;
     }
-    var sec = Math.round((Date.now() - hang.t0) / 1000); hang = null; clearInterval(hangIv); hangIv = null; c.classList.remove("run");
-    if (sec < 3){ toast("Zu kurz, nicht gespeichert."); renderHang(true); return; }
-    var st = hangStats(), best = st.best, keep = Math.max(sec, st.today || 0);
-    $("#hgTime").textContent = hangFmt(sec);
-    saveSessionPatch({hang: keep}).then(function(){
-      toast(best && sec > best ? "Neue Bestzeit: " + hangFmt(sec) + " 🔥" : hangFmt(sec) + " gespeichert");
-      renderHang(true);
-    }).catch(function(e){ toast(errText(e)); renderHang(true); });
+    finishHang().then(function(sec){ if (sec && hangStep){ clearTimeout(hangAutoT); hangAutoT = setTimeout(function(){ if (hangStep && !hang) hangContinue(); }, 1600); } });
   });
 
-  // ---------- Körpermaße (Umfang in cm, ca. einmal im Monat) ----------
+  // ---------- Körpermaße (nur noch Daten: bleiben in Sicherungen erhalten) ----------
   var MSF = [["arm", "Oberarm"], ["fore", "Unterarm"], ["chest", "Brust"], ["waist", "Taille"], ["thigh", "Oberschenkel"]];
   function cleanMs(v){ if (!v || typeof v !== "object") return null; var o = {}, n = 0; MSF.forEach(function(f){ var x = clean(v[f[0]]); if (x !== null && x >= 10 && x <= 250){ o[f[0]] = Math.round(x * 10) / 10; n++; } }); return n ? o : null; }
-  function renderMs(){
-    var ul = $("#msList"); if (!ul) return;
-    var list = sessions.filter(function(x){ return x.ms && x.id <= todayId(); }).slice().sort(function(a, b){ return a.id < b.id ? -1 : 1; });
-    var last = {}, first = {};
-    list.forEach(function(x){ MSF.forEach(function(f){ var v = x.ms[f[0]]; if (v){ if (first[f[0]] === undefined) first[f[0]] = v; last[f[0]] = v; } }); });
-    ul.innerHTML = "";
-    $("#msMeta").textContent = list.length ? "zuletzt " + dateShort(list[list.length - 1].id) : "";
-    if (!Object.keys(last).length){ var p0 = document.createElement("li"); p0.className = "msempty"; p0.textContent = "Noch nichts gemessen. Einmal im Monat reicht, so siehst du, wo Muskeln wachsen."; ul.appendChild(p0); }
-    else MSF.forEach(function(f){
-      if (last[f[0]] === undefined) return;
-      var li = document.createElement("li"), a = document.createElement("span"), b = document.createElement("b"), c = document.createElement("span");
-      a.textContent = f[1]; b.textContent = fmt(last[f[0]]) + " cm"; c.className = "msd";
-      var d = Math.round((last[f[0]] - first[f[0]]) * 10) / 10;
-      if (d){ c.textContent = (d > 0 ? "+" : "−") + fmt(Math.abs(d)); c.classList.add(f[0] === "waist" ? (d < 0 ? "good" : "warn") : (d > 0 ? "good" : "warn")); }
-      li.appendChild(a); li.appendChild(b); li.appendChild(c); ul.appendChild(li);
-    });
-    var form = $("#msForm");
-    if (!form.dataset.built){
-      form.dataset.built = "1";
-      MSF.forEach(function(f){
-        var lb = document.createElement("label"), sp = document.createElement("span"), w = document.createElement("span"), inp = document.createElement("input"), u = document.createElement("i");
-        sp.textContent = f[1]; w.className = "nin"; inp.inputMode = "decimal"; inp.autocomplete = "off"; inp.dataset.k = f[0]; inp.setAttribute("aria-label", f[1] + " in cm"); u.textContent = "cm";
-        w.appendChild(inp); w.appendChild(u); lb.appendChild(sp); lb.appendChild(w); form.appendChild(lb);
-      });
-    }
-    $$("input", form).forEach(function(inp){ inp.placeholder = last[inp.dataset.k] !== undefined ? fmt(last[inp.dataset.k]) : "–"; });
-  }
-  $("#msSave").addEventListener("click", function(){
-    var o = {}, bad = false, n = 0;
-    $$("#msForm input").forEach(function(inp){ if (!inp.value.trim()) return; var v = num(inp.value); if (v === null || v < 10 || v > 250){ bad = true; return; } o[inp.dataset.k] = Math.round(v * 10) / 10; n++; });
-    if (bad){ toast("Bitte Werte in cm eintragen, z. B. 36,5."); return; }
-    if (!n){ toast("Trag mindestens einen Wert ein."); return; }
-    var s0 = todaySession(), merged = {}; if (s0 && s0.ms) Object.keys(s0.ms).forEach(function(k){ merged[k] = s0.ms[k]; }); Object.keys(o).forEach(function(k){ merged[k] = o[k]; });
-    saveSessionPatch({ms:merged}).then(function(){ $$("#msForm input").forEach(function(i){ i.value = ""; }); $("#msMore").open = false; toast("📏 Maße gespeichert"); renderMs(); }).catch(function(e){ toast(errText(e)); });
-  });
-
   // ---------- Essen ----------
   var foodDays = [], foodCol = null, pending = null, pendingWater = 0, pendingTitle = "", sampleFn = null, sampleOk = false, photoFile = null, photoUrl = null;
   function todayFood(){ var t = todayId(); for (var i = 0; i < foodDays.length; i++) if (foodDays[i].id === t) return foodDays[i].items; return []; }
@@ -1616,7 +1553,8 @@
   var favEditOn = false, favAll = false;
   function renderFavs(){
     var box = $("#favList"); if (!box) return; box.innerHTML = "";
-    var eb = $("#favEdit"), q = $("#favQ"), more = $("#favMore");
+    var eb = $("#favEdit"), q = $("#favQ"), more = $("#favMore"), fm = $("#favMeta");
+    if (fm) fm.textContent = favs.length ? favs.length + " gemerkt" : "";
     if (eb){ eb.hidden = !favs.length; if (!favs.length) favEditOn = false; eb.textContent = favEditOn ? "Fertig" : "Bearbeiten"; }
     box.classList.toggle("edit", favEditOn);
     q.hidden = favs.length <= 6;
@@ -2009,7 +1947,6 @@
     }).join("");
     var got = sv.filter(function(v){ return v; });
     $("#slAvg").textContent = got.length ? "Ø " + hrs(Math.round(got.reduce(function(a, b){ return a + b; }, 0) / got.length)) + " · 7 Nächte" : "";
-    renderMs();
     var log = todayWaterLog(), lastAt = null; log.forEach(function(e){ if (e.at) lastAt = e.at; });
     $("#wLast").textContent = log.length ? log.length + "× getrunken" + (lastAt && !isNaN(Date.parse(lastAt)) ? ", zuletzt " + new Date(lastAt).toLocaleTimeString("de-DE", {hour:"2-digit", minute:"2-digit"}) : "") : "";
   }
@@ -2303,8 +2240,6 @@
   var pickCtx = null;
   function openPick(o){
     pickCtx = o; $("#pickT").textContent = o.title;
-    var md = $("#pkMode"); md.hidden = !o.modes; if (o.modes){ o.mode = o.mode || "today"; $$("button", md).forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.v === o.mode)); }); }
-    $("#pkSkip").hidden = !o.skip;
     var box = $("#pkList"); box.innerHTML = "";
     var cands = ALLSTR.filter(function(ex){ return (o.exclude || []).indexOf(ex.id) < 0; });
     var fromM = o.from && MUSCLES[o.from] ? MUSCLES[o.from].p : [];
@@ -2326,38 +2261,20 @@
   }
   function closePick(){ $("#pickSheet").hidden = true; pickCtx = null; }
   $("#pickX").addEventListener("click", closePick);
-  $("#pkMode").addEventListener("click", function(ev){ var b = ev.target.closest("button[data-v]"); if (!b || !pickCtx) return; pickCtx.mode = b.dataset.v; $$("#pkMode button").forEach(function(x){ x.setAttribute("aria-pressed", String(x === b)); }); });
-  $("#pkSkip").addEventListener("click", function(){ var c = pickCtx; closePick(); if (c && c.onSkip) c.onSkip(); });
-  $("#pkList").addEventListener("click", function(ev){ var b = ev.target.closest("button[data-id]"); if (!b || !pickCtx) return; var c = pickCtx; closePick(); c.onPick(b.dataset.id, c.mode); });
-  // Tauschen direkt aus der Übungskarte (z. B. Gerät besetzt)
-  function swapFromCard(ex){
-    openPick({title:"Tauschen: " + ex.name, from:ex.id, exclude:PLAN.map(function(e){ return e.id; }), modes:true, skip:true, mode:"today",
-      onPick:function(id, md){ swapEx(ex.id, id, md); }, onSkip:function(){ swapEx(ex.id, "", "today"); }});
-  }
-  function swapEx(from, to, md){
-    var n = JSON.parse(JSON.stringify(PREFS)), t = todayId(), tmp = n.tmp && n.tmp.d === t ? n.tmp : {d:t, sw:{}}, orig = from;
-    Object.keys(tmp.sw).forEach(function(k){ if (tmp.sw[k] === from) orig = k; });
-    if (md === "always" && to){
-      var ids = planIds(PLAN_KEY), k = ids.indexOf(orig); if (k < 0) k = ids.indexOf(from);
-      if (k >= 0){ ids[k] = to; if (ids.join() === PLANS[PLAN_KEY].join()) delete n.plans[PLAN_KEY]; else n.plans[PLAN_KEY] = ids; }
-      delete tmp.sw[orig];
-    } else tmp.sw[orig] = to;
-    n.tmp = Object.keys(tmp.sw).length ? tmp : null;
-    setPrefs(n, {save:true, openId:to || null});
-    toast(!to ? BYID[from].name + " heute weggelassen" : md === "always" ? BYID[to].name + " ist jetzt fest im Plan" : BYID[to].name + " statt " + BYID[from].name + " (nur heute)");
-  }
+  $("#pkList").addEventListener("click", function(ev){ var b = ev.target.closest("button[data-id]"); if (!b || !pickCtx) return; var c = pickCtx; closePick(); c.onPick(b.dataset.id); });
   try { var st0 = JSON.parse(localStorage.getItem(SKEY) || "{}"); if (Array.isArray(st0.days)) setDays(st0.days); setPrefs(st0.prefs || {}); updatePlan(); } catch (e) { applyLook(); }
 
   // ---------- Zuklapp-Zustand ----------
   var FOLDKEY = "folds-v1";
   function foldSt(){ try { return JSON.parse(localStorage.getItem(FOLDKEY) || "{}") || {}; } catch (e) { return {}; } }
-  function keyFolds(){ $$("details").forEach(function(d){ if (!d.dataset.k){ var t = d.querySelector("summary .ft") || d.querySelector("summary"); d.dataset.k = "d-" + (d.id || (t ? t.textContent.trim() : "")); } }); }
+  function keyFolds(){ $$("details").forEach(function(d){ if (!d.dataset.k && !d.hasAttribute("data-nofold")){ var t = d.querySelector("summary .ft") || d.querySelector("summary"); d.dataset.k = "d-" + (d.id || (t ? t.textContent.trim() : "")); } }); }
   function applyFolds(){ var st = foldSt(); $$("details[data-k]").forEach(function(d){ if (Object.prototype.hasOwnProperty.call(st, d.dataset.k)) d.open = !!st[d.dataset.k]; }); }
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "4.0", APP_BUILT = "2026-11-27T12:50:42Z";
+  var APP_VERSION = "4.1", APP_BUILT = "2026-11-27T13:33:19Z";
   var CHANGES = [
+    ["4.1", "Aufgeräumt: Heute, Muskeln, Rekorde und Maße raus, Notiz und Tauschen aus der Übung raus (Tauschen nur in den Einstellungen). Neuer kurzer Pausen-Ton, Musik läuft weiter. Dead Hang als erster Schritt nach „Training starten“. Bewertungen ohne Emojis, kg und Wdh. mittig, Schnell hinzufügen unter Heute gegessen und zugeklappt."],
     ["4.0", "Einstellungen (Zahnrad): Ziele, Limits, Pausen, Töne, Wiegetag, Design, Schriftgröße. Plan selbst anpassen, Übung tauschen (auch nur heute), Notiz pro Übung, Rekord-Meldung. Neue Muskelbilder, Muskeln pro Woche und Rekorde im Verlauf, Maße und Zielgewicht, Essen nachträglich ändern. Sicherung als Datei und automatisch, startet offline, eigene Schriften, strengere Sicherheitsregeln."],
     ["3.9", "Rückmeldungen nach dem Eintragen zeigen, was noch fehlt, und feiern erreichte Ziele; Legende im Verlauf ohne Wochentage"],
     ["3.8", "Wiegen nur dienstags als fällig, sonst Hinweis im Verlauf; Aufbau-Tag-Nachricht zeigt, wie weit du bist"],
@@ -2778,7 +2695,7 @@
     var o = loadLocal(LKEY), f = loadLocal(FKEY), w = loadLocal(WKEY);
     if (o === null){ mode = "readonly"; setBanner("Speichern ist hier nicht verfügbar. Öffne die Seite in Claude, um einzutragen."); }
     else { mode = "local"; sessions = sessionsFromLocal(o); foodDays = f ? foodFromLocal(f) : []; waterDays = w ? waterFromLocal(w) : []; updateSyncBanner(); }
-    updateSyncBanner(); readyResolve(); renderTraining(); renderFood(); renderWater(); if (mode === "local"){ purgeTests(); seedToday(); }
+    updateSyncBanner(); readyResolve(); renderTraining(); renderFood(); renderWater(); if (mode === "local"){ purgeTests(); seedToday(); fixAccident(); }
   }
   var unsubT = null, unsubF = null;
   function subscribeTraining(){
@@ -2789,7 +2706,7 @@
       });
       known = {}; sessions.forEach(function(s){ known[s.id] = true; });
       firstSync.tr = true; updateSyncBanner();
-      renderTraining(); purgeTests(); seedToday(); importOld();
+      renderTraining(); purgeTests(); seedToday(); importOld(); fixAccident();
     }, function(err){
       if (err && (err.code === "unavailable" || err.code === "deadline-exceeded" || err.code === "aborted")){ setTimeout(subscribeTraining, 3000); return; }
       firstSync.tr = true; updateSyncBanner();
@@ -2886,9 +2803,6 @@
       if (willOpen){ refreshRow(ex); li.scrollIntoView({block:"nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"}); }
       return;
     }
-    var nb = ev.target.closest(".exnb");
-    if (nb){ editNote(ex, nb); return; }
-    if (ev.target.closest(".exsw")){ swapFromCard(ex); return; }
     var stepBtn = ev.target.closest(".step");
     if (stepBtn){ var mi = $(".min", li), mv = num(mi.value); mi.value = String(Math.max(0, (mv === null ? ex.min : mv) + Number(stepBtn.dataset.d))); markDirty(ex.id); return; }
     var rc = ev.target.closest(".rchips button");
@@ -2915,22 +2829,6 @@
     }
   });
 
-  // Notiz pro Übung (z. B. Sitz 4, Griff eng) – wird mit den Einstellungen synchronisiert
-  function editNote(ex, nb){
-    var wrap = nb.parentNode, inp = document.createElement("input"), done = false;
-    inp.className = "exni"; inp.maxLength = 60; inp.value = PREFS.notes[ex.id] || ""; inp.placeholder = "z. B. Sitz 4, Griff eng"; inp.setAttribute("aria-label", "Notiz zu " + ex.name); inp.autocomplete = "off"; inp.enterKeyHint = "done";
-    nb.hidden = true; wrap.insertBefore(inp, nb); inp.focus();
-    function commit(){
-      if (done) return; done = true;
-      var v = cleanText(inp.value, 60), n = JSON.parse(JSON.stringify(PREFS)), old = PREFS.notes[ex.id] || "";
-      inp.remove(); nb.hidden = false;
-      if (v === old) return;
-      if (v) n.notes[ex.id] = v; else delete n.notes[ex.id];
-      setPrefs(n, {save:true}); toast(v ? "Notiz gespeichert" : "Notiz gelöscht");
-    }
-    inp.addEventListener("keydown", function(e2){ if (e2.key === "Enter"){ e2.preventDefault(); inp.blur(); } else if (e2.key === "Escape"){ inp.value = PREFS.notes[ex.id] || ""; inp.blur(); } });
-    inp.addEventListener("blur", commit);
-  }
   function collectEntry(ex, li){
     if (ex.kind === "time"){
       var m = num($(".min", li).value);
@@ -3022,6 +2920,7 @@
   function tmIdx(){ var o = $(".ex.open"); return o ? PLAN.indexOf(BYID[o.dataset.id]) : -1; }
   function tmUpdate(){
     var bar = $("#tmBar"); if (!bar) return; var on = tmOn(); bar.hidden = !on; if (!on){ var nnh = $("#tmNextName"); if (nnh) nnh.hidden = true; dockUpdate(); return; }
+    if (hangStep){ $("#tmN").textContent = "Dead Hang"; bar.classList.remove("fin"); bar.style.setProperty("--tp", "0%"); $("#tmNext").textContent = "Weiter ›"; var nh = $("#tmNextName"); if (nh) nh.hidden = true; dockUpdate(); return; }
     var i = tmIdx(), o = $(".ex.open"); $("#tmN").textContent = (i + 1) + "/" + PLAN.length;
     bar.classList.toggle("fin", !!o && o.classList.contains("tmfin"));
     bar.style.setProperty("--tp", (Math.max(0, i + 1) / PLAN.length * 100).toFixed(1) + "%");
@@ -3046,10 +2945,11 @@
     dockUpdate();
   }
   function dockUpdate(){ var d = $("#dock"); if (d) d.classList.toggle("on", !$("#timer").hidden || !$("#tmNextName").hidden); }
-  $("#tmNextName").addEventListener("click", function(){ tmGo(tmIdx() + 1); });
+  $("#tmNextName").addEventListener("click", function(){ if (hangStep){ hangContinue(); return; } tmGo(tmIdx() + 1); });
   new MutationObserver(dockUpdate).observe($("#timer"), {attributes:true, attributeFilter:["hidden"]});
   function tmGo(i){
     if (i < 0) return; if (i >= PLAN.length){ tmStop(); return; }
+    if (hangStep){ if (hang) finishHang(); hangStepOff(); }
     var li = $('.ex[data-id="' + PLAN[i].id + '"]'); if (!li) return;
     setOpen(li, true); refreshRow(PLAN[i]); window.scrollTo(0, 0); tmUpdate();
   }
@@ -3062,9 +2962,8 @@
   }
   function tmStart(){
     document.body.classList.add("tm"); try { localStorage.setItem("fit-tm", todayId()); } catch (e) {}
-    var first = 0; for (var i = 0; i < PLAN.length; i++){ if (!exDoneEntry(PLAN[i], todayEntry(PLAN[i].id))){ first = i; break; } }
     var t0 = trState(); if (!t0 || t0.e) trSave({s:new Date().toISOString(), e:"", t:0});
-    tmGo(first);
+    if (hangWanted()) hangStepOn(); else tmGo(firstOpenIdx());
   }
   function showDone(sI, eI){
     var min = Math.round((Date.parse(eI) - Date.parse(sI)) / 60000); if (min < 5) return;
@@ -3101,8 +3000,9 @@
     $("#tmDone").hidden = false;
   }
   $("#tmDoneOk").addEventListener("click", function(){ $("#tmDone").hidden = true; tmStop(); });
-  function tmStop(){ var t1 = trState(); if (t1 && !t1.e){ var eI = new Date().toISOString(); trSave({s:t1.s, e:eI, t:t1.t || 0}); if (!t1.t) showDone(t1.s, eI); } document.body.classList.remove("tm"); try { localStorage.removeItem("fit-tm"); localStorage.removeItem("fit-retro"); } catch (e) {} $$(".ex.open").forEach(function(o){ setOpen(o, false); }); stopTimer(); tmUpdate(); window.scrollTo(0, 0); }
+  function tmStop(){ if (hang) finishHang(); if (hangStep) hangStepOff(); var t1 = trState(); if (t1 && !t1.e){ var eI = new Date().toISOString(); trSave({s:t1.s, e:eI, t:t1.t || 0}); if (!t1.t) showDone(t1.s, eI); } document.body.classList.remove("tm"); try { localStorage.removeItem("fit-tm"); localStorage.removeItem("fit-retro"); } catch (e) {} $$(".ex.open").forEach(function(o){ setOpen(o, false); }); stopTimer(); tmUpdate(); window.scrollTo(0, 0); }
   function restoreTm(){
+    try { if (localStorage.getItem("fit-tm") === todayId() && localStorage.getItem(HSKEY) === todayId() && PREFS.hang){ document.body.classList.add("tm"); hangStepOn(); return; } } catch (e) {}
     try { if (localStorage.getItem("fit-tm") === todayId()){ document.body.classList.add("tm"); restoreOpen(); if (!$(".ex.open")){ var f = 0; for (var i = 0; i < PLAN.length; i++){ if (!exDoneEntry(PLAN[i], todayEntry(PLAN[i].id))){ f = i; break; } } tmGo(f); } } } catch (e) {}
     tmUpdate();
   }
@@ -3110,15 +3010,14 @@
   $("#tmTest").addEventListener("click", function(){
     document.body.classList.add("tm"); try { localStorage.setItem("fit-tm", todayId()); } catch (e) {}
     trSave({s:new Date().toISOString(), e:"", t:1});
-    var first = 0; for (var i = 0; i < PLAN.length; i++){ if (!exDoneEntry(PLAN[i], todayEntry(PLAN[i].id))){ first = i; break; } }
-    tmGo(first);
+    if (hangWanted()) hangStepOn(); else tmGo(firstOpenIdx());
   });
   $("#tmStart").addEventListener("click", tmStart);
   $("#tmAny").addEventListener("click", tmStart);
   $("#tmEdit").addEventListener("click", tmEdit);
   $("#tmExit").addEventListener("click", tmStop);
-  $("#tmPrev").addEventListener("click", function(){ tmGo(tmIdx() - 1); });
-  $("#tmNext").addEventListener("click", function(){ if (tmIdx() >= PLAN.length - 1) finishTraining(true); else tmGo(tmIdx() + 1); });
+  $("#tmPrev").addEventListener("click", function(){ if (hangStep) return; if (tmIdx() === 0 && PREFS.hang){ hangStepOn(); return; } tmGo(tmIdx() - 1); });
+  $("#tmNext").addEventListener("click", function(){ if (hangStep){ hangContinue(); return; } if (tmIdx() >= PLAN.length - 1) finishTraining(true); else tmGo(tmIdx() + 1); });
   var rateCtx = null;
   function openRateDialog(ex, li, srateBtn, afterFn, opts){
     rateCtx = {exId: ex.id, li: li, btn: srateBtn, after: afterFn, opts: opts || null};
@@ -3275,35 +3174,44 @@
 
   // ---------- Timer ----------
   var tState = null, tIv = null, audio = null;
-  function ensureAudio(){ try { if (!audio){ var AC = window.AudioContext || window.webkitAudioContext; if (AC) audio = new AC(); } if (audio && audio.state === "suspended") audio.resume(); } catch (e) { audio = null; } }
+  // iPhone: "ambient" = Töne laufen über die Musik, ohne sie anzuhalten (nur der Sperrbildschirm-Modus braucht "playback")
+  function audioMode(){ try { if (navigator.audioSession) navigator.audioSession.type = lockOn() ? "playback" : "ambient"; } catch (e) {} }
+  function ensureAudio(){ try { audioMode(); if (!audio){ var AC = window.AudioContext || window.webkitAudioContext; if (AC) audio = new AC(); } if (audio && audio.state === "suspended") audio.resume(); } catch (e) { audio = null; } }
   function volF(){ return [0, 0.22, 0.55, 1][PREFS.vol] || 1; }
   function vibe(p){ try { if (PREFS.vib && navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
+  // Kurzer, klarer Doppel-Gong (hoch und rein, schneidet durch Musik). Grundton + leise Obertöne = glockiger Klang.
+  function chime(t0, f, dur, peak, dest){
+    [[1, 1], [2, 0.3], [3, 0.12]].forEach(function(p){
+      var o = audio.createOscillator(), g = audio.createGain(); o.type = "sine"; o.frequency.value = f * p[0]; o.connect(g); g.connect(dest);
+      g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(Math.max(0.001, peak * p[1]), t0 + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      o.start(t0); o.stop(t0 + dur + 0.03);
+    });
+  }
   function beep(){
-    if (!audio || lockActive()){ vibe([300, 120, 300, 120, 500]); return; }
+    if (!audio || lockActive()){ vibe([180, 90, 260]); return; }
     try {
-      var comp = audio.createDynamicsCompressor(); comp.connect(audio.destination);
-      [0, 0.18, 0.36, 0.8, 0.98, 1.16, 1.6, 1.78, 1.96].forEach(function(t, i){
-        var o = audio.createOscillator(), g = audio.createGain(); o.type = "square"; o.frequency.value = i >= 6 ? 1320 : 1040; o.connect(g); g.connect(comp);
-        var s = audio.currentTime + t; g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(volF(), s + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, s + 0.15);
-        o.start(s); o.stop(s + 0.16);
-      });
+      var comp = audio.createDynamicsCompressor(); comp.threshold.value = -20; comp.knee.value = 6; comp.ratio.value = 10; comp.connect(audio.destination);
+      var t = audio.currentTime + 0.02, v = volF();
+      chime(t, 1568, 0.42, v, comp); chime(t + 0.17, 2093, 0.62, v, comp);
     } catch (e) {}
-    vibe([300, 120, 300, 120, 500]);
+    vibe([180, 90, 260]);
   }
   // Sperrbildschirm-Modus: Pause als Audiospur (läuft auch bei gesperrtem Handy, zeigt Fortschritt im Sperrbildschirm)
   var LOCK_KEY = "fit-lockaudio", lockEl = null, lockUrl = null;
+  // Einmalig: Sperrbildschirm-Ton aus, damit die Musik weiterläuft (in den Einstellungen wieder einschaltbar)
+  try { if (!localStorage.getItem("fit-lockaudio-m41")){ localStorage.setItem(LOCK_KEY, "0"); localStorage.setItem("fit-lockaudio-m41", "1"); } } catch (e) {}
   function lockOn(){ try { return localStorage.getItem(LOCK_KEY) === "1"; } catch (e) { return false; } }
   function lockActive(){ return !!(lockEl && !lockEl.paused); }
   function pauseWav(secs){
-    var R = 8000, tail = 2.4, n = Math.round((secs + tail) * R), buf = new ArrayBuffer(44 + n), v = new DataView(buf), a = new Uint8Array(buf, 44);
+    var R = 8000, tail = 1.2, n = Math.round((secs + tail) * R), buf = new ArrayBuffer(44 + n), v = new DataView(buf), a = new Uint8Array(buf, 44);
     function str(o, t){ for (var i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); }
     str(0, "RIFF"); v.setUint32(4, 36 + n, true); str(8, "WAVEfmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
     v.setUint32(24, R, true); v.setUint32(28, R, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); str(36, "data"); v.setUint32(40, n, true);
     a.fill(128);
-    function tone(t0, dur, f, amp){ var s0 = Math.round(t0 * R), len = Math.round(dur * R), per = R / f; for (var i = 0; i < len && s0 + i < n; i++){ if (s0 + i < 0) continue; a[s0 + i] = 128 + ((i % per) < per / 2 ? amp : -amp); } }
-    var vf = volF();
-    if (PREFS.cdBeep) for (var c = 3; c >= 1; c--) if (secs - c > 0) tone(secs - c, 0.1, 760, Math.round(70 * Math.max(0.4, vf)));
-    [0, 0.18, 0.36, 0.8, 0.98, 1.16, 1.6, 1.78, 1.96].forEach(function(t, i){ tone(secs + t, 0.15, i >= 6 ? 1320 : 1040, Math.round(120 * Math.max(0.3, vf))); });
+    function tone(t0, dur, f, amp, h2){ var s0 = Math.round(t0 * R), len = Math.round(dur * R); for (var i = 0; i < len && s0 + i < n; i++){ if (s0 + i < 0) continue; var tt = i / R, env = Math.exp(-tt * 7 / dur) * Math.min(1, tt / 0.006), v0 = Math.sin(2 * Math.PI * f * tt) + (h2 ? 0.3 * Math.sin(4 * Math.PI * f * tt) : 0), cur = a[s0 + i] - 128; a[s0 + i] = Math.max(0, Math.min(255, Math.round(128 + cur + amp * env * v0 / (h2 ? 1.3 : 1)))); } }
+    var vf = Math.max(0.35, volF());
+    if (PREFS.cdBeep) for (var c = 3; c >= 1; c--) if (secs - c > 0) tone(secs - c, 0.08, 1046, Math.round(60 * vf), false);
+    tone(secs, 0.42, 1568, Math.round(118 * vf), true); tone(secs + 0.17, 0.62, 2093, Math.round(118 * vf), false);
     return URL.createObjectURL(new Blob([buf], {type:"audio/wav"}));
   }
   function lockStop(){ try { if (lockEl){ lockEl.pause(); lockEl.removeAttribute("src"); lockEl.load(); } if (lockUrl) URL.revokeObjectURL(lockUrl); lockUrl = null; if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "none"; } catch (e) {} }
@@ -3319,15 +3227,15 @@
         var at = new Date(tState.end).toLocaleTimeString("de-DE", {hour:"2-digit", minute:"2-digit"});
         navigator.mediaSession.metadata = new MediaMetadata({title:"Pause · weiter um " + at, artist:tState.name ? "nach " + tState.name : "Training", album:"Body Tracking", artwork:[{src:"icon-512.png", sizes:"512x512", type:"image/png"}]});
         navigator.mediaSession.playbackState = "playing";
-        try { navigator.mediaSession.setPositionState({duration:secs + 2.4, position:0, playbackRate:1}); } catch (e) {}
+        try { navigator.mediaSession.setPositionState({duration:secs + 1.2, position:0, playbackRate:1}); } catch (e) {}
       }
     } catch (e) {}
   }
   var lastCd = null;
   function countBeep(){
     if (!audio || lockActive() || !PREFS.cdBeep) return;
-    try { var o = audio.createOscillator(), g = audio.createGain(); o.type = "square"; o.frequency.value = 760; o.connect(g); g.connect(audio.destination);
-      var s = audio.currentTime; g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(0.5 * volF(), s + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, s + 0.09); o.start(s); o.stop(s + 0.1); } catch (e) {}
+    try { var o = audio.createOscillator(), g = audio.createGain(); o.type = "sine"; o.frequency.value = 1046; o.connect(g); g.connect(audio.destination);
+      var s = audio.currentTime; g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(0.45 * volF(), s + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, s + 0.08); o.start(s); o.stop(s + 0.1); } catch (e) {}
   }
   function startBeep(){
     if (!audio) return;
@@ -3387,7 +3295,7 @@
   }
 
   var lkIn = $("#lockAudio");
-  if (lkIn) lkIn.addEventListener("change", function(){ try { localStorage.setItem(LOCK_KEY, lkIn.checked ? "1" : "0"); } catch (e) {} if (!lkIn.checked) lockStop(); else if (tState && !tState.over) lockPlay(); toast(lkIn.checked ? "Pausen-Ton auch bei gesperrtem Handy an" : "Aus"); });
+  if (lkIn) lkIn.addEventListener("change", function(){ try { localStorage.setItem(LOCK_KEY, lkIn.checked ? "1" : "0"); } catch (e) {} audioMode(); if (!lkIn.checked) lockStop(); else if (tState && !tState.over) lockPlay(); toast(lkIn.checked ? "An: Ton auch gesperrt, Musik stoppt dabei" : "Aus: Musik läuft weiter"); });
   buildList(); showView(); keyFolds(); applyFolds(); renderTDays(); renderMeals(TRAIN_DAYS.indexOf(new Date().getDay()) >= 0 ? "train" : "rest"); renderTraining(); renderFood(); renderWater(); applyDrafts(); restoreOpen(); restoreTimer(); restoreTm();
   booted = true; renderSettings();
   // Offline-Hülle (nur auf der echten Seite per HTTPS)

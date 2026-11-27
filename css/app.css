@@ -1471,17 +1471,6 @@ input.tg:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
 .pick button.srow{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 14px;margin:0 0 4px}
 .pick button.srow .sl{color:var(--red)}
 
-/* ---------- Übungskarte: Notiz & Tauschen ---------- */
-.exx{display:flex;gap:8px;margin:2px 0 8px}
-.exnb,.exsw{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 12px;border-radius:999px;border:1px dashed var(--line);background:transparent;color:var(--muted);font-size:13.5px;font-weight:600;cursor:pointer;max-width:100%}
-.exnb{flex:1;min-width:0;justify-content:flex-start}
-.exnb .exnt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.exnb.has{border-style:solid;border-color:color-mix(in srgb,var(--yellow) 60%,var(--line));background:color-mix(in srgb,var(--yellow) 12%,transparent);color:var(--ink)}
-.exnb[hidden]{display:none}
-.exsw{flex:none;color:var(--blue);border-style:solid;border-color:color-mix(in srgb,var(--blue) 35%,var(--line))}
-.exni{flex:1;min-width:0;height:36px;border-radius:999px;border:1px solid var(--blue);background:var(--field);color:var(--ink);padding:0 14px;font-size:15px}
-body.tm .exx{margin:0 0 6px}
-
 /* ---------- Essen: Eintrag ändern ---------- */
 .fedit{margin:8px 0 2px;padding:10px;border-radius:12px;background:color-mix(in srgb,var(--line) 30%,transparent);display:grid;gap:8px}
 .fe-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -1494,51 +1483,9 @@ body.tm .exx{margin:0 0 6px}
 /* ---------- Körper: Zielgewicht & Maße ---------- */
 .bwgoal{margin:10px 0 0;padding:8px 12px;border-radius:12px;background:color-mix(in srgb,var(--blue) 9%,transparent);font-size:14.5px;font-weight:600}
 .bwgoal[hidden]{display:none}
-.mslist{list-style:none;margin:0;padding:0}
-.mslist li{display:grid;grid-template-columns:1fr auto 64px;align-items:baseline;gap:10px;padding:8px 0;border-top:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
-.mslist li:first-child{border-top:0}
-.mslist b{font-family:var(--cond);font-size:20px;font-weight:700}
-.msd{text-align:right;font-size:13.5px;font-weight:700;color:var(--muted)}
-.msd.good{color:var(--green)}
-.msd.warn{color:#C2772B}
-.mslist .msempty{display:block;color:var(--muted);font-size:14.5px;border:0;padding:4px 0}
-.msgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 4px}
-.msgrid label{display:grid;gap:4px;font-size:13px;font-weight:600;color:var(--muted)}
-.msgrid .nin input{width:100%}
-.msgrid .nin{display:flex}
-.msnote{font-size:12.5px;color:var(--muted);margin:8px 0 0}
-
 /* ---------- Verlauf: Muskeln diese Woche, Rekorde, Serie ---------- */
-.musfig .fullb{display:block;width:100%;height:auto;max-height:270px;margin:0 auto}
-.muslgd{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin:6px 0 0;font-size:12.5px;color:var(--muted)}
-.muslgd span{display:inline-flex;align-items:center;gap:5px}
-.muslgd i{width:14px;height:10px;border-radius:3px;display:inline-block}
-.muslgd .lv1,.msb .lv1{background:#F7C9CD}
-.muslgd .lv2,.msb .lv2{background:#EE8C95}
-.muslgd .lv3,.msb .lv3{background:#D7263A}
-.muslgd .lv4,.msb .lv4{background:#7E0E20}
-.mussum{margin:8px 0 0;font-size:14px;line-height:1.4}
-.muslist{list-style:none;margin:4px 0 0;padding:0}
-.muslist li{display:grid;grid-template-columns:128px 1fr 66px;align-items:center;gap:10px;padding:5px 0;font-size:14px}
-.msb{height:8px;border-radius:99px;background:color-mix(in srgb,var(--line) 55%,transparent);overflow:hidden;display:block}
-.msb i{display:block;height:100%;border-radius:99px}
-.muslist b{text-align:right;font-size:13.5px}
-.muslist b.l0{color:var(--muted);font-weight:500}
-.musnote{font-size:12.5px;color:var(--muted);margin:8px 0 2px}
-.body .lv1{fill:#F7C9CD !important;stroke:#B9737B !important;stroke-width:.8 !important}
-.body .lv2{fill:#EE8C95 !important;stroke:#9E3540 !important;stroke-width:.9 !important}
-.body .lv3{fill:url(#gPrim) !important;stroke:#5E0B17 !important;stroke-width:1 !important}
-.body .lv4{fill:#7E0E20 !important;stroke:#3D0610 !important;stroke-width:1.1 !important}
-.recl{list-style:none;margin:0;padding:0}
-.recl li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;border-top:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
-.recl li:first-child{border-top:0}
-.recl b{display:block;font-size:15.5px}
-.recl small{display:block;color:var(--muted);font-size:12.5px}
-.recv{text-align:right;font-family:var(--cond);font-weight:700;font-size:18px;white-space:nowrap}
-.recv small{font-family:var(--text);font-weight:500}
 .wksum.streak{font-weight:600}
 .wksum.streak[hidden]{display:none}
-#musCard[hidden],#recBox[hidden]{display:none}
 
 /* ---------- Meldungen ---------- */
 .toast.win{background:linear-gradient(135deg,#E2B21C,#D7263A);color:#fff;font-weight:700;box-shadow:0 8px 24px rgba(215,38,58,.35)}
@@ -1551,8 +1498,52 @@ details.xmore>summary{list-style:none;display:flex;justify-content:space-between
 details.xmore>summary::-webkit-details-marker{display:none}
 details.xmore>summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--blue);border-bottom:2px solid var(--blue);transform:translateY(-2px) rotate(45deg);margin-right:4px}
 details.xmore[open]>summary::after{transform:translateY(2px) rotate(-135deg)}
-.body.heat .mu{fill:#E6E9ED !important;stroke:#B9C0C8 !important}
-.body.heat .fib{display:none}
-:root[data-theme="dark"] .body.heat .mu{fill:#4A5563 !important;stroke:#69768A !important}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .body.heat .mu{fill:#4A5563 !important;stroke:#69768A !important}}
-body.tm .hangcard:not(.run){display:none !important}
+/* ---------- 4.1 ---------- */
+/* kg und Wdh. mittig unter den Spaltenköpfen */
+.setrow .num{justify-self:stretch;justify-content:center;display:flex}
+.setrow.head span{justify-self:stretch;text-align:center}
+.setrow .x{justify-self:center}
+/* Dead Hang: nur als erster Schritt im Training */
+body:not(.tm) .hangcard,body.tm:not(.tmhang) .hangcard:not(.run){display:none !important}
+body.tmhang #exWrap,body.tmhang .weighcard,body.tmhang .planlink,body.tmhang .dock,body.tmhang #tmEdit{display:none !important}
+body.tmhang .hangcard{display:grid;grid-template-columns:1fr;justify-items:center;text-align:center;gap:12px;margin:22px 0 0;padding:26px 18px 22px;border-radius:24px}
+body.tmhang .hgl{display:grid;gap:4px}
+.hgs{display:none}
+body.tmhang .hgs{display:block;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+body.tmhang .hgt{font-family:var(--cond);font-weight:700;font-size:36px;line-height:1.05}
+body.tmhang .hgm{font-size:14.5px}
+body.tmhang .hgtime{font-size:76px;line-height:1;min-width:0;text-align:center;margin:6px 0 4px}
+body.tmhang .hgbtn{width:100%;max-width:340px;min-height:60px;font-size:20px;border-radius:16px;background:var(--blue);border-color:var(--blue);color:var(--on-accent)}
+body.tmhang .hangcard.run .hgbtn{background:var(--red);border-color:var(--red);color:#fff}
+.hgnext{display:none;margin:2px 0 0;color:var(--muted);font-size:14px}
+body.tmhang .hgnext{display:block}
+/* Bewertung ohne Emojis: Farbbalken statt Bild */
+.rdgrid button{gap:8px !important}
+.rdgrid button b{font-family:var(--text) !important;font-size:15px !important;font-weight:700 !important;line-height:1.2 !important}
+.rdc{display:block;width:30px;height:6px;border-radius:9px;background:var(--muted)}
+.rdgrid button[data-r="leicht"] .rdc{background:#3E7BD6}
+.rdgrid button[data-r="passt"] .rdc{background:#23935A}
+.rdgrid button[data-r="hart"] .rdc{background:#C98A12}
+.rdgrid button[data-r="vhart"] .rdc{background:#D86A1C}
+.rdgrid button[data-r="limit"] .rdc,.rdgrid button[data-r="fail"] .rdc{background:#C8303B}
+.rdgrid button[data-r="fail"] .rdc{box-shadow:inset 0 0 0 2px #7E0E20}
+.rdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin:0 3px 1px 2px;vertical-align:middle;background:var(--muted)}
+.rdot.r-easy,.rdot.r-leicht{background:#3E7BD6}
+.rdot.r-passt{background:#23935A}
+.rdot.r-hart{background:#C98A12}
+.rdot.r-vhart{background:#D86A1C}
+.rdot.r-limit,.rdot.r-fail{background:#C8303B}
+/* Schnell hinzufügen: unter "Heute gegessen", zugeklappt */
+.favbox{background:var(--surface);border:1px solid var(--line);border-radius:18px;margin:16px 0 0;padding:0 14px}
+.favbox[open]{padding-bottom:14px}
+.favbox>summary{list-style:none;display:flex;align-items:center;gap:10px;min-height:56px;cursor:pointer}
+.favbox>summary::-webkit-details-marker{display:none}
+.favbox>summary .ft{flex:1;font-family:var(--cond);font-weight:700;font-size:22px}
+.favbox>summary .fm{font-size:14px;color:var(--muted)}
+.favbox>summary::after{content:"";flex:none;width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:translateY(-2px) rotate(45deg);margin:0 4px 0 2px}
+.favbox[open]>summary::after{transform:translateY(2px) rotate(-135deg)}
+.favtop{display:flex;align-items:center;gap:10px;margin:0 0 8px}
+.favtop .fsearch{flex:1;margin:0}
+.favtop .linkbtn{margin-left:auto}
+.favtop:has(#favQ[hidden]):has(#favEdit[hidden]){display:none}
+body.tmhang #tmN{font-size:15px;white-space:nowrap}

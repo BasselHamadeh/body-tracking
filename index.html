@@ -72,9 +72,10 @@
     <button type="button" class="tmany" id="tmAny" hidden>Heute trotzdem trainieren</button>
     <div class="weighcard" id="weighCard" hidden><span class="wgt" id="wgT">⚖️ Heute wiegen</span><div class="krow"><label class="sr" for="wqIn">Gewicht in kg</label><input id="wqIn" inputmode="decimal" placeholder="kg" autocomplete="off"><button type="button" class="btn primary" id="wqSave">Speichern</button></div></div>
     <div class="hangcard" id="hangCard" hidden>
-      <div class="hgl"><span class="hgt">Dead Hang</span><span class="hgm" id="hgMeta"></span></div>
+      <div class="hgl"><span class="hgs">Zum Start</span><span class="hgt">Dead Hang</span><span class="hgm" id="hgMeta"></span></div>
       <span class="hgtime" id="hgTime" aria-live="polite">0 s</span>
       <button type="button" class="btn hgbtn" id="hgBtn">Start</button>
+      <p class="hgnext" id="hgNext"></p>
     </div>
     <button type="button" class="tmedit" id="tmEdit" hidden></button>
     <div id="exWrap">
@@ -98,12 +99,6 @@
   </section>
 
   <section class="view" data-name="verlauf" hidden>
-    <div class="kcard" id="todayCard">
-      <div class="khead"><h2>Heute</h2><span class="fm" id="tdMeta2"></span></div>
-      <div class="vstats" id="todayStats"></div>
-      <p class="tline" id="todayLine"></p>
-      <p class="tline wnote" id="weighNote" hidden></p>
-    </div>
     <div class="kcard">
       <div class="khead"><h2>Letzte 7 Tage</h2><span class="fm" id="wkMeta"></span></div>
       <div class="vstats">
@@ -114,6 +109,7 @@
       </div>
       <p class="wksum yest" id="wkYest"></p>
       <p class="wksum streak" id="wkStreak" hidden></p>
+      <p class="wksum wnote" id="weighNote" hidden></p>
       <p class="wksum" id="wkSum"></p>
       <p class="chl" id="wkChl">Ø ohne heute · Eiweiß pro Tag in g, Linie 150 g</p>
       <div class="chart"><div class="goal" id="wkGoal"></div><div class="bars" id="wkChart"></div></div>
@@ -121,14 +117,6 @@
     </div>
 
     <div class="kcard" id="lastTr"></div>
-
-    <div class="kcard" id="musCard">
-      <div class="khead"><h2>Muskeln · 7 Tage</h2><span class="fm" id="musMeta"></span></div>
-      <div class="musfig" id="musFig"></div>
-      <p class="muslgd"><span><i class="lv1"></i>wenig</span><span><i class="lv2"></i>okay</span><span><i class="lv3"></i>gut</span><span><i class="lv4"></i>sehr viel</span></p>
-      <p class="mussum" id="musSum"></p>
-      <details class="vdet"><summary>Sätze pro Muskel</summary><ul class="muslist" id="musList"></ul><p class="musnote">Für Muskelaufbau gelten etwa 10–20 harte Sätze pro Muskel und Woche als gut. Hilfsmuskeln zählen halb.</p></details>
-    </div>
 
     <div class="kcard">
       <div class="khead"><h2>Progressive Overload</h2><span class="fm" id="ovlMeta"></span></div>
@@ -142,10 +130,6 @@
 
     <div id="history"></div>
 
-    <details class="cardf" id="recBox">
-      <summary><span class="ft">Rekorde</span><span class="fm" id="recMeta"></span></summary>
-      <div class="cin"><ul class="recl" id="recList"></ul></div>
-    </details>
     <div hidden><ul id="bwList"></ul><span id="bwMeta"></span><p id="bwProg"></p></div>
   </section>
 
@@ -210,17 +194,19 @@
     </div>
 
     <div class="fblock">
-      <div class="fhead"><h2>Schnell hinzufügen</h2><button type="button" class="linkbtn" id="favEdit" hidden>Bearbeiten</button></div>
-      <input type="search" class="fsearch" id="favQ" placeholder="Gemerkte durchsuchen …" aria-label="Gemerkte Einträge durchsuchen" autocomplete="off" hidden>
-      <div id="favList" class="fgrid"></div>
-      <button type="button" class="fmore" id="favMore" hidden></button>
-    </div>
-
-    <div class="fblock">
       <div class="fhead"><h2>Heute gegessen</h2><span class="fm" id="todayMeta"></span></div>
       <div id="foodToday"></div>
       <button type="button" class="fmore" id="todayMore" hidden></button>
     </div>
+
+    <details class="favbox" id="favBox" data-nofold>
+      <summary><span class="ft">Schnell hinzufügen</span><span class="fm" id="favMeta"></span></summary>
+      <div class="favin">
+        <div class="favtop"><input type="search" class="fsearch" id="favQ" placeholder="Gemerkte durchsuchen …" aria-label="Gemerkte Einträge durchsuchen" autocomplete="off" hidden><button type="button" class="linkbtn" id="favEdit" hidden>Bearbeiten</button></div>
+        <div id="favList" class="fgrid"></div>
+        <button type="button" class="fmore" id="favMore" hidden></button>
+      </div>
+    </details>
   </section>
 
   <section class="view" data-name="wasser" hidden>
@@ -234,16 +220,6 @@
       <div class="krow"><label class="sr" for="bwIn">Körpergewicht in kg</label><input id="bwIn" inputmode="decimal" placeholder="Gewicht heute" autocomplete="off"><button type="button" class="btn primary" id="bwSave">Eintragen</button></div>
       <p class="bwgoal" id="bwGoal" hidden></p>
       <p class="fstatus" id="bwHint"></p>
-    </div>
-
-    <div class="kcard" id="msCard">
-      <div class="khead"><h2>Maße</h2><span class="fm" id="msMeta"></span></div>
-      <ul class="mslist" id="msList"></ul>
-      <details class="xmore" id="msMore"><summary>Neu messen</summary>
-        <div class="msgrid" id="msForm"></div>
-        <div class="frow"><button type="button" class="btn primary" id="msSave">Speichern</button></div>
-        <p class="msnote">Morgens messen, Maßband locker anlegen. Arm angespannt an der dicksten Stelle.</p>
-      </details>
     </div>
 
     <div class="kcard">
@@ -305,7 +281,7 @@
       <div class="srow"><span class="sl">Lautstärke</span><div class="seg2" data-pref="vol" role="group" aria-label="Lautstärke"><button type="button" data-v="1">Leise</button><button type="button" data-v="2">Mittel</button><button type="button" data-v="3">Laut</button></div></div>
       <label class="srow"><span class="sl">Countdown 3, 2, 1</span><input type="checkbox" class="tg" data-pref="cdBeep"></label>
       <label class="srow"><span class="sl">Vibration<small>Nur Android, iPhones können das in Web-Apps nicht.</small></span><input type="checkbox" class="tg" data-pref="vib"></label>
-      <label class="srow"><span class="sl">Auch bei gesperrtem Handy<small>Zeigt die Pause im Sperrbildschirm. Pausiert dabei deine Musik.</small></span><input type="checkbox" class="tg" id="lockAudio"></label>
+      <label class="srow"><span class="sl">Auch bei gesperrtem Handy<small>Zeigt die Pause im Sperrbildschirm, stoppt dabei aber deine Musik. Normal läuft deine Musik weiter.</small></span><input type="checkbox" class="tg" id="lockAudio"></label>
       <button type="button" class="srow link" id="sndTest"><span class="sl">Ton testen</span><span class="chev" aria-hidden="true">▶</span></button>
     </section>
     <section class="sgrp"><h3>Ziele pro Tag</h3>
@@ -353,8 +329,6 @@
 <div class="sheet pick" id="pickSheet" hidden role="dialog" aria-modal="true" aria-labelledby="pickT">
   <div class="sh-head"><span></span><h2 id="pickT">Übung wählen</h2><button type="button" class="sh-x" id="pickX" aria-label="Schließen">✕</button></div>
   <div class="sh-body">
-    <div class="seg2 pkmode" id="pkMode" hidden role="group" aria-label="Wie lange"><button type="button" data-v="today">Nur heute</button><button type="button" data-v="always">Immer</button></div>
-    <button type="button" class="srow link" id="pkSkip" hidden><span class="sl">Heute weglassen</span></button>
     <div id="pkList"></div>
   </div>
 </div>
@@ -364,8 +338,8 @@
 <div class="tmbar" id="tmBar" hidden><button type="button" id="tmExit">Beenden</button><button type="button" id="tmPrev" aria-label="Zurück">‹</button><span class="tmc"><b id="tmN">1/11</b><small id="tmTime">0:00</small></span><button type="button" class="tmn" id="tmNext">Weiter ›</button></div>
 <div class="tmdone" id="tmDone" hidden><div class="box"><b id="tmDoneT">Training geschafft 💪</b><div class="tdstats" id="tmDoneS"></div><div class="tdfig" id="tmDoneFig"></div><p id="tmDoneP" hidden></p><ul class="tdl" id="tmDoneL"></ul><div class="tdok"><button type="button" id="tmDoneOk">Fertig</button></div></div></div>
 <div class="ratedlg" id="rateDlg" hidden><div class="rdbox"><div class="rdt">Wie war der Satz?</div><div class="rds" id="rdSub"></div><div class="rdgrid">
-<button type="button" data-r="leicht"><b>🙂</b><small>Leicht</small></button><button type="button" data-r="passt"><b>💪</b><small>Genau richtig</small></button><button type="button" data-r="hart"><b>😤</b><small>Schwer</small></button>
-<button type="button" data-r="vhart"><b>🥵</b><small>Sehr schwer</small></button><button type="button" data-r="limit"><b>🔥</b><small>Am Limit</small></button><button type="button" data-r="fail"><b>💀</b><small>Über dem Limit</small></button>
+<button type="button" data-r="leicht"><i class="rdc" aria-hidden="true"></i><b>Leicht</b></button><button type="button" data-r="passt"><i class="rdc" aria-hidden="true"></i><b>Genau richtig</b></button><button type="button" data-r="hart"><i class="rdc" aria-hidden="true"></i><b>Schwer</b></button>
+<button type="button" data-r="vhart"><i class="rdc" aria-hidden="true"></i><b>Sehr schwer</b></button><button type="button" data-r="limit"><i class="rdc" aria-hidden="true"></i><b>Am Limit</b></button><button type="button" data-r="fail"><i class="rdc" aria-hidden="true"></i><b>Über dem Limit</b></button>
 </div><p class="rdh">Ideal ist „Genau richtig“ bis „Schwer“. Daraus kommt dein nächstes Ziel.</p><button type="button" class="rdreset" id="rdReset" hidden>Satz zurücksetzen</button></div></div>
 <script src="js/app.js"></script>
 </body>
