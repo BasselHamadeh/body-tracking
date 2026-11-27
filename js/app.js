@@ -53,7 +53,7 @@
   // Dropsätze nur bei Maschinen-/Isolationsübungen, direkt nach dem letzten Satz ohne Pause.
   var PLANS = {
     // 1–2 Tage: Ganzkörper (Supersätze sparen Zeit)
-    full:["beinpresse","rdl","brustpresse","latzug","rudern","seitheben","reverse_fly","hammer","trizeps_oh","rope","waden","reverse"],
+    full:["beinpresse","brustpresse","latzug","rudern","seitheben","reverse_fly","preacher","hammer","trizeps_oh","rope","waden","reverse"],
     // 3 Tage: Ganzkörper A/B/C
     fullA:["kniebeuge","beinbeuger","brustpresse","latzug","butterfly","seitheben","reverse_fly","hammer","trizeps_oh","waden","reverse"],
     fullB:["rdl","beinstrecker","schulterpresse","kabelrudern","brustpresse_m","facepull","preacher","rope","bauch"],
@@ -597,6 +597,7 @@
     exWrap.classList.toggle("collapsed", !isTrain && !exShown); exWrap.classList.toggle("restlist", !isTrain);
     $("#tmAny").hidden = true;
     var wc = $("#weighCard"); if (wc){ var bl = sessions.filter(function(x){ return x.bw > 0 && x.id <= todayId(); }).sort(function(a, b){ return a.id < b.id ? 1 : -1; }); wc.hidden = !(new Date().getDay() === WEIGH_DAY && (!bl.length || weighDue(bl[0].id)) && !document.body.classList.contains("tm")); }
+    renderHang(isTrain);
     var tsE = todaySession(), hasE = !!(tsE && isRealSession(tsE)), openR = PLAN.filter(function(ex){ var e = todayEntry(ex.id); return e && !exDoneEntry(ex, e); }).length;
     var eb = $("#tmEdit"); eb.hidden = true;
     eb.textContent = openR ? "⭐ Heutiges Training bewerten (" + openR + " offen)" : "✎ Heutiges Training ansehen / ändern";
@@ -810,7 +811,7 @@
   var LKEY = "training-log-v1", FKEY = "food-log-v1";
   function loadLocal(key){ try { var raw = localStorage.getItem(key); var o = raw ? JSON.parse(raw) : {}; return (o && typeof o === "object") ? o : {}; } catch (e) { return null; } }
   function writeLocal(key, o){ try { localStorage.setItem(key, JSON.stringify(o)); return true; } catch (e) { return false; } }
-  function sessionsFromLocal(o){ return Object.keys(o).filter(isDateId).sort().reverse().map(function(id){ var x = o[id] || {}; return {id:id, entries:x.entries || {}, note: typeof x.note === "string" ? x.note : "", bw: clean(x.bw), sl: cleanSleep(x.sl), tr: cleanTr(x.tr)}; }); }
+  function sessionsFromLocal(o){ return Object.keys(o).filter(isDateId).sort().reverse().map(function(id){ var x = o[id] || {}; return {id:id, entries:x.entries || {}, note: typeof x.note === "string" ? x.note : "", bw: clean(x.bw), hang: cleanHang(x.hang), sl: cleanSleep(x.sl), tr: cleanTr(x.tr)}; }); }
   function foodFromLocal(o){ return Object.keys(o).filter(isDateId).sort().reverse().slice(0, 400).map(function(id){ return {id:id, items:Array.isArray(o[id] && o[id].items) ? o[id].items : []}; }); }
 
   function saveEntry(exId, entry){
@@ -852,7 +853,7 @@
   // Löscht nur das Training. Gewicht und Schlaf des Tages bleiben erhalten.
   function deleteSession(id){
     delete shadow[id];
-    var s0 = sessionById(id), keepDay = !!(s0 && (s0.bw || s0.sl));
+    var s0 = sessionById(id), keepDay = !!(s0 && (s0.bw || s0.sl || s0.hang));
     if (id === todayId()){ try { localStorage.removeItem("fit-draft"); localStorage.removeItem("fit-fin"); localStorage.removeItem("fit-done"); } catch (e) {} draftMem = null; autoDone = {}; dirty = {}; }
     return ready.then(function(){
       if (mode === "local"){ var o = loadLocal(LKEY) || {}; if (keepDay && o[id]){ o[id].entries = {}; o[id].tr = null; o[id].note = ""; } else delete o[id]; writeLocal(LKEY, o); sessions = sessionsFromLocal(o); renderTraining(); return; }
@@ -956,6 +957,46 @@
     var v = num($("#bwIn").value);
     if (v === null || v < 30 || v > 250){ toast("Gewicht in kg eintragen, z. B. 82,5."); $("#bwIn").focus(); return; }
     saveSessionPatch({bw: Math.round(v * 10) / 10}).then(function(){ $("#bwIn").value = ""; toast("Gewicht gespeichert"); renderBW(); }).catch(function(e){ toast(errText(e)); });
+  });
+
+  // ---------- Dead Hang (Stoppuhr vor dem Training) ----------
+  function cleanHang(v){ var n = Number(v); return isFinite(n) && n >= 1 && n <= 900 ? Math.round(n) : null; }
+  var hang = null, hangIv = null;
+  function hangFmt(sec){ sec = Math.max(0, Math.floor(sec)); return sec >= 60 ? Math.floor(sec / 60) + ":" + pad(sec % 60) + " min" : sec + " s"; }
+  function hangStats(){
+    var t = todayId(), list = sessions.filter(function(x){ return x.hang > 0 && x.id <= t; }).sort(function(a, b){ return a.id < b.id ? 1 : -1; });
+    var today = list.length && list[0].id === t ? list[0] : null, prev = list.filter(function(x){ return x.id !== t; });
+    return {today: today ? today.hang : null, last: prev.length ? prev[0] : null, best: list.length ? Math.max.apply(null, list.map(function(x){ return x.hang; })) : null};
+  }
+  function renderHang(isTrain){
+    var c = $("#hangCard"); if (!c) return;
+    var st = hangStats();
+    c.hidden = !(isTrain || hang);
+    if (hang) return;
+    $("#hgTime").textContent = st.today ? hangFmt(st.today) : "0 s";
+    $("#hgBtn").textContent = st.today ? "Nochmal" : "Start";
+    c.classList.toggle("done", !!st.today);
+    var bits = [];
+    if (st.best) bits.push("Bestzeit " + hangFmt(st.best));
+    if (st.last) bits.push("letztes Mal " + hangFmt(st.last.hang));
+    $("#hgMeta").textContent = bits.length ? bits.join(" · ") : "So lange wie möglich hängen, dann stoppen.";
+  }
+  function hangTick(){ if (hang) $("#hgTime").textContent = hangFmt((Date.now() - hang.t0) / 1000); }
+  $("#hgBtn").addEventListener("click", function(){
+    var b = $("#hgBtn"), c = $("#hangCard");
+    if (!hang){
+      ensureAudio(); startBeep();
+      hang = {t0: Date.now()}; c.classList.add("run"); b.textContent = "Stopp"; $("#hgMeta").textContent = "Läuft … tippe auf Stopp, wenn du loslässt.";
+      clearInterval(hangIv); hangIv = setInterval(hangTick, 200); hangTick(); keepAwake(); return;
+    }
+    var sec = Math.round((Date.now() - hang.t0) / 1000); hang = null; clearInterval(hangIv); hangIv = null; c.classList.remove("run");
+    if (sec < 3){ toast("Zu kurz, nicht gespeichert."); renderHang(true); return; }
+    var st = hangStats(), best = st.best, keep = Math.max(sec, st.today || 0);
+    $("#hgTime").textContent = hangFmt(sec);
+    saveSessionPatch({hang: keep}).then(function(){
+      toast(best && sec > best ? "Neue Bestzeit: " + hangFmt(sec) + " 🔥" : hangFmt(sec) + " gespeichert");
+      renderHang(true);
+    }).catch(function(e){ toast(errText(e)); renderHang(true); });
   });
 
   // ---------- Essen ----------
@@ -1866,8 +1907,9 @@
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "3.5", APP_BUILT = "2026-11-27T08:23:57Z";
+  var APP_VERSION = "3.6", APP_BUILT = "2026-11-27T08:28:17Z";
   var CHANGES = [
+    ["3.6", "Kreuzheben raus, Preacher Curls zurück, Dead Hang mit Stoppuhr vor dem Training"],
     ["3.5", "Beinbeuger raus (2 Tage) → Rumänisches Kreuzheben, „Zuletzt“-Zeile weg, Pausen-Ton auch bei gesperrtem Handy"],
     ["3.4", "Trainingsplan passt sich an die Anzahl Trainingstage an (2–6), neue Übungen, Trizeps über Kopf zurück (Superset mit Hammer Curls)"],
     ["3.3", "Trizeps über Kopf raus (Zeit), Details zu Übungen und Werten aufklappbar"],
@@ -1907,7 +1949,7 @@
   // ---------- Sicherung ----------
   function buildBackup(){
     var t = {}, f = {}, w = {};
-    sessions.forEach(function(x){ var o = {entries:x.entries || {}}; if (x.note) o.note = x.note; if (x.bw) o.bw = x.bw; if (x.sl) o.sl = {from:x.sl.from, to:x.sl.to}; if (x.tr) o.tr = x.tr; t[x.id] = o; });
+    sessions.forEach(function(x){ var o = {entries:x.entries || {}}; if (x.note) o.note = x.note; if (x.bw) o.bw = x.bw; if (x.hang) o.hang = x.hang; if (x.sl) o.sl = {from:x.sl.from, to:x.sl.to}; if (x.tr) o.tr = x.tr; t[x.id] = o; });
     foodDays.forEach(function(x){ if (x.items.length) f[x.id] = {items:x.items}; });
     waterDays.forEach(function(x){ if (x.log.length) w[x.id] = {log:x.log}; });
     return {app:"training", v:1, at:new Date().toISOString(), t:t, f:f, w:w, s:{days:TRAIN_DAYS.slice()}, fav:favs};
@@ -1969,7 +2011,7 @@
     var jobs = [];
     shadow = {};
     nT.forEach(function(id){ var x = d.t[id] || {}, p = {entries: cleanEntries(x.entries)};
-      if (typeof x.note === "string") p.note = x.note.slice(0, 300); if (clean(x.bw)) p.bw = clean(x.bw);
+      if (typeof x.note === "string") p.note = x.note.slice(0, 300); if (clean(x.bw)) p.bw = clean(x.bw); if (cleanHang(x.hang)) p.hang = cleanHang(x.hang);
       var sl = cleanSleep(x.sl); if (sl) p.sl = {from:sl.from, to:sl.to}; var tr = cleanTr(x.tr); if (tr) p.tr = tr;
       jobs.push(function(){ return saveSessionPatch(p, id); }); });
     nF.forEach(function(id){ var items = cleanItems(d.f[id] && d.f[id].items); jobs.push(function(){ return putDay("f", id, {date:id, items:items}); }); });
@@ -2253,7 +2295,7 @@
     if (unsubT){ try { unsubT(); } catch (e) {} }
     unsubT = col.orderBy("date", "desc").limit(300).onSnapshot(function(snap){
       sessions = snap.docs.filter(function(d){ return d.exists && isDateId(d.id); }).map(function(d){
-        var data = d.data() || {}; return {id:d.id, entries:(data.entries && typeof data.entries === "object") ? data.entries : {}, note: typeof data.note === "string" ? data.note.slice(0, 300) : "", bw: clean(data.bw), sl: cleanSleep(data.sl), tr: cleanTr(data.tr)};
+        var data = d.data() || {}; return {id:d.id, entries:(data.entries && typeof data.entries === "object") ? data.entries : {}, note: typeof data.note === "string" ? data.note.slice(0, 300) : "", bw: clean(data.bw), hang: cleanHang(data.hang), sl: cleanSleep(data.sl), tr: cleanTr(data.tr)};
       });
       known = {}; sessions.forEach(function(s){ known[s.id] = true; });
       firstSync.tr = true; updateSyncBanner();

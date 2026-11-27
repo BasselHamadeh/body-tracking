@@ -1357,3 +1357,15 @@ body:not(.tm) #exlist .ex.done .ex-state{display:block !important}
 .lockrow input{width:22px;height:22px;flex:none;margin-top:2px;accent-color:var(--acc, #4ade80)}
 .lockrow b{display:block;font-weight:600}
 .lockrow small{display:block;opacity:.7;margin-top:2px;line-height:1.35}
+
+.hangcard{display:flex;align-items:center;gap:12px;margin:12px 0 0;padding:12px 14px;border-radius:18px;background:var(--surface);border:1px solid var(--line)}
+.hangcard[hidden]{display:none !important}
+.hgl{flex:1;min-width:0}
+.hgt{display:block;font-weight:700;font-size:15px}
+.hgm{display:block;font-size:13px;opacity:.7;margin-top:2px;line-height:1.3}
+.hgtime{font-family:var(--cond);font-weight:700;font-size:24px;font-variant-numeric:tabular-nums;min-width:64px;text-align:right}
+.hgbtn{min-height:44px;min-width:84px;border-radius:12px}
+.hangcard.run{border-color:color-mix(in srgb,var(--blue) 60%,var(--line))}
+.hangcard.run .hgtime{color:var(--blue)}
+.hangcard.run .hgbtn{background:var(--red);border-color:var(--red);color:#fff}
+.hangcard.done:not(.run) .hgtime{opacity:.85}
