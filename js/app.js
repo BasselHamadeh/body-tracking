@@ -24,16 +24,16 @@
     {id:"brustpresse", name:"Schrägbankdrücken", sets:3, reps:[8,12], pr:[10,9,8], rest:120, restText:"2 min", kg:25, step:2.5, since:"2026-11-13"},
     {id:"seitheben", name:"Seitheben Maschine", sets:2, reps:[12,20], pr:[15,12], drop:true, dropPr:10, rest:75, restText:"75 s", kg:45, dropKg:30, step:5},
     {id:"reverse_fly", name:"Reverse Butterfly", sets:2, reps:[12,20], pr:[15,12], drop:true, dropPr:10, rest:75, restText:"75 s", kg:30, dropKg:20, step:5},
-    {id:"beinbeuger", name:"Beinbeuger", sets:3, reps:[10,15], pr:[12,10,10], rest:90, restText:"90 s", kg:40, step:5},
+    {id:"beinbeuger", name:"Beinbeuger", sets:3, reps:[10,15], pr:[12,10,10], drop:true, dropPr:8, rest:90, restText:"90 s", kg:40, dropKg:30, step:5},
     {id:"schulterpresse", name:"Schulterpresse", sets:3, reps:[8,12], pr:[10,9,8], rest:120, restText:"2 min", kg:30, step:5},
     {id:"bauch", name:"Bauchmaschine", sets:3, reps:[12,20], pr:[15,12,12], rest:60, restText:"60 s", kg:30, step:5},
     {id:"preacher", name:"Preacher Curls", note:"Langhantel, Untergriff, nur Scheiben pro Seite", sets:3, reps:[8,12], pr:[10,8,8], rest:90, restText:"90 s", kg:5, step:1.25, since:"2026-11-10"},
     {id:"trizeps_oh", name:"Trizeps über Kopf", note:"1 Hantel, 2 Hände", sets:2, reps:[10,15], pr:[12,10], rest:90, restText:"90 s", kg:16, step:2, since:"2026-11-03"},
     {id:"hammer", name:"Hammer Curls", sets:2, reps:[10,15], pr:[12,10], drop:true, dropPr:8, rest:75, restText:"75 s", kg:12, dropKg:8, step:2},
-    {id:"rope", name:"Rope Pushdown", sets:2, reps:[10,15], pr:[12,10], rest:75, restText:"75 s", kg:30, step:5},
+    {id:"rope", name:"Rope Pushdown", sets:2, reps:[10,15], pr:[12,10], drop:true, dropPr:8, rest:75, restText:"75 s", kg:30, dropKg:20, step:5},
     {id:"reverse", name:"Reverse Curls", sets:2, reps:[12,20], pr:[15,12], rest:60, restText:"60 s", kg:8, step:1},
-    {id:"butterfly", name:"Butterfly", sets:2, reps:[8,12], pr:[10,8], drop:true, dropPr:8, rest:90, restText:"90 s", kg:65, dropKg:40, step:5},
-    {id:"beinpresse", name:"Beinpresse", sets:4, reps:[10,15], pr:[12,10,10,10], rest:120, restText:"2 min", kg:160, step:10},
+    {id:"butterfly", name:"Butterfly", sets:2, reps:[10,15], pr:[12,10], drop:true, dropPr:8, rest:90, restText:"90 s", kg:65, dropKg:40, step:5},
+    {id:"beinpresse", name:"Beinpresse", sets:4, reps:[10,15], pr:[12,10,10,10], rest:150, restText:"2½ min", kg:160, step:10},
     {id:"beinstrecker", name:"Beinstrecker", sets:2, reps:[10,15], pr:[12,10], drop:true, dropPr:8, rest:90, restText:"90 s", kg:70, dropKg:50, step:5},
     {id:"waden", name:"Waden", sets:2, reps:[12,20], pr:[15,12], drop:true, dropPr:10, rest:60, restText:"60 s", kg:45, dropKg:30, step:5},
     {id:"rennen", name:"Rennen", kind:"time", min:10, target:"10 min"}
@@ -42,17 +42,20 @@
   var ALLSTR = CATALOG.filter(function(e){ return e.kind !== "time"; });
   var PLAN = [], STRENGTH = [];
   var PAIR = {seitheben:"reverse_fly", reverse_fly:"seitheben"};
+  // Reihenfolge für maximales Wachstum: große Grundübungen zuerst (frisch, schwer), dann Isolation mit Dropsätzen, Arme und Waden zum Schluss.
+  // Dropsätze nur bei Maschinen-/Isolationsübungen, direkt nach dem letzten Satz ohne Pause.
   var PLANS = {
-    full:["beinpresse","latzug","brustpresse","rudern","seitheben","reverse_fly","butterfly","preacher","trizeps_oh","rope","reverse","waden"],
-    fullA:["beinpresse","latzug","brustpresse","rudern","seitheben","reverse_fly","preacher","trizeps_oh","rope","reverse","waden"],
-    fullB:["beinbeuger","latzug","schulterpresse","rudern","butterfly","seitheben","hammer","rope","beinstrecker","bauch"],
-    fullC:["beinpresse","brustpresse","latzug","schulterpresse","rudern","reverse_fly","hammer","trizeps_oh","beinbeuger","waden"],
-    upper:["latzug","rudern","brustpresse","schulterpresse","seitheben","reverse_fly","hammer","rope"],
-    lower:["beinpresse","beinbeuger","beinstrecker","waden","bauch","preacher","trizeps_oh"],
+    full:["beinpresse","beinbeuger","brustpresse","latzug","rudern","butterfly","seitheben","reverse_fly","preacher","trizeps_oh","rope","waden"],
+    fullA:["beinpresse","beinbeuger","brustpresse","latzug","seitheben","reverse_fly","preacher","rope","waden"],
+    fullB:["beinbeuger","beinstrecker","schulterpresse","rudern","butterfly","seitheben","reverse_fly","hammer","trizeps_oh","bauch"],
+    fullC:["beinpresse","brustpresse","latzug","rudern","seitheben","reverse_fly","preacher","rope","waden"],
+    upper:["brustpresse","latzug","schulterpresse","rudern","butterfly","seitheben","reverse_fly","preacher","rope"],
+    lower:["beinpresse","beinbeuger","beinstrecker","waden","bauch"],
     push:["brustpresse","schulterpresse","butterfly","seitheben","trizeps_oh","rope"],
-    pull:["latzug","rudern","reverse_fly","preacher","hammer","reverse"],
-    legs:["beinpresse","beinbeuger","beinstrecker","waden","bauch"],
+    pull:["latzug","rudern","reverse_fly","preacher","hammer"],
+    legs:["beinpresse","beinbeuger","beinstrecker","waden","bauch"]
   };
+
   function dOrd(d){ return (d + 6) % 7; }
   function planList(wdDay){
     var n = TRAIN_DAYS.length, key = "full";
@@ -691,6 +694,35 @@
     Object.keys(ent).forEach(function(k){ var at = ent[k] && Date.parse(ent[k].at); if (at && at < cut) changed = true; else keep[k] = ent[k]; });
     var trOld = s0.tr && Date.parse(s0.tr.s) < cut && (!s0.tr.e || Date.parse(s0.tr.e) < cut);
     if (changed || trOld) saveSessionPatch({entries:keep, tr: trOld ? null : s0.tr}, id).catch(function(){});
+  }
+  // Alte Daten (29.10.–02.11., aus der ersten App-Version) einmalig in die eigene Datenbank übernehmen
+  var oldImported = false;
+  function importOld(){
+    if (oldImported || mode !== "db" || !SB || !firstSync.tr) return; oldImported = true;
+    SB.db.fresh("data/users/" + SB.uid).then(function(){
+      return Promise.all([SB.db.fresh("data/users/" + SB.uid + "/food/days"), SB.db.fresh("data/users/" + SB.uid + "/water/days")]);
+    }).then(function(){
+      setTimeout(function(){
+        var jobs = [];
+        Object.keys(SEED.t).filter(isDateId).forEach(function(id){
+          if (sessionById(id)) return;
+          var x = SEED.t[id] || {}, p = {entries: cleanEntries(x.entries)};
+          if (typeof x.note === "string" && x.note) p.note = x.note.slice(0, 300);
+          if (clean(x.bw)) p.bw = clean(x.bw);
+          var sl = cleanSleep(x.sl); if (sl) p.sl = {from:sl.from, to:sl.to};
+          jobs.push(function(){ return saveSessionPatch(p, id); });
+        });
+        Object.keys(SEED.f).filter(isDateId).forEach(function(id){
+          if (foodDays.some(function(d){ return d.id === id; })) return;
+          var items = cleanItems(SEED.f[id] && SEED.f[id].items); if (items.length) jobs.push(function(){ return putDay("f", id, {date:id, items:items}); });
+        });
+        Object.keys(SEED.w).filter(isDateId).forEach(function(id){
+          if (waterDays.some(function(d){ return d.id === id; })) return;
+          var log = cleanLog(SEED.w[id] && SEED.w[id].log); if (log.length) jobs.push(function(){ return putDay("w", id, {date:id, ml:mlSum(log), log:log}); });
+        });
+        jobs.reduce(function(pr, j){ return pr.then(j); }, Promise.resolve()).catch(function(){});
+      }, 0);
+    }, function(){ oldImported = false; });
   }
   var seeded = false;
   function seedToday(){
@@ -1791,8 +1823,9 @@
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "2.9", APP_BUILT = "2026-11-27T07:47:44Z";
+  var APP_VERSION = "3.0", APP_BUILT = "2026-11-27T07:53:54Z";
   var CHANGES = [
+    ["3.0", "Neuer Plan für mehr Wachstum: Beinbeuger dazu, Dropsätze bei Isolationsübungen, sinnvolle Reihenfolge. Alte Daten (29.10.–02.11.) übernommen."],
     ["2.9", "Wiegen dienstags vor dem Training, Steigerung zählt ab dem nächsten Training, Tageswert entfernt"],
     ["2.8", "Verlauf: klareres Diagramm, Trainingstage markiert, Alle Trainings entfernt"],
     ["2.7", "Erledigte Übungen ausgegraut, Erholungs-Karte entfernt"],
@@ -2176,7 +2209,7 @@
       });
       known = {}; sessions.forEach(function(s){ known[s.id] = true; });
       firstSync.tr = true; updateSyncBanner();
-      renderTraining(); purgeTests(); seedToday();
+      renderTraining(); purgeTests(); seedToday(); importOld();
     }, function(err){
       if (err && (err.code === "unavailable" || err.code === "deadline-exceeded" || err.code === "aborted")){ setTimeout(subscribeTraining, 3000); return; }
       firstSync.tr = true; updateSyncBanner();
