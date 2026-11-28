@@ -1550,3 +1550,16 @@ body.tmhang #tmN{font-size:15px;white-space:nowrap}
 
 /* iPhone: kein Zoom durch Doppeltippen */
 html,body,button,a,input,select,textarea,label,summary{touch-action:manipulation}
+
+/* ---------- 4.3: Richtwerte ruhig, heute ohne Umrandung, Heute gegessen aufklappbar ---------- */
+.fwarn{color:var(--muted) !important;font-weight:500 !important}
+.fs-m.over .fbar i,.fs-m.near .fbar i,.track.over i,.limits .lim.over i,.limits .lim.near i{background:#D9B25A !important}
+.fs-m.over b,.limits .lim.over b{color:inherit !important}
+.limits .lw{color:var(--muted) !important;font-weight:500 !important}
+.bcol.today .bar{outline:none !important;box-shadow:none !important}
+.favbox>summary{flex-wrap:wrap;row-gap:0;padding:8px 0}
+.favbox>summary .fm{order:3;flex-basis:100%;font-size:13.5px;margin-top:-2px}
+.favbox>summary::after{order:2}
+.eatbox{margin-top:16px}
+.eatbox .favin{border-top:1px solid color-mix(in srgb,var(--line) 70%,transparent);padding-top:6px}
+.eatbox #foodToday .fgh{margin-top:10px}

@@ -193,11 +193,13 @@
       </div>
     </div>
 
-    <div class="fblock">
-      <div class="fhead"><h2>Heute gegessen</h2><span class="fm" id="todayMeta"></span></div>
-      <div id="foodToday"></div>
-      <button type="button" class="fmore" id="todayMore" hidden></button>
-    </div>
+    <details class="favbox eatbox" id="eatBox" data-nofold>
+      <summary><span class="ft">Heute gegessen</span><span class="fm" id="todayMeta"></span></summary>
+      <div class="favin">
+        <div id="foodToday"></div>
+        <button type="button" class="fmore" id="todayMore" hidden></button>
+      </div>
+    </details>
 
     <details class="favbox" id="favBox" data-nofold>
       <summary><span class="ft">Schnell hinzufügen</span><span class="fm" id="favMeta"></span></summary>
@@ -290,7 +292,7 @@
       <label class="srow"><span class="sl">Schlaf</span><span class="nin"><input data-pref="sleep" inputmode="decimal" autocomplete="off"><i>h</i></span></label>
       <label class="srow"><span class="sl">Zielgewicht<small>Optional</small></span><span class="nin"><input data-pref="goalBw" inputmode="decimal" autocomplete="off" placeholder="–"><i>kg</i></span></label>
     </section>
-    <section class="sgrp"><h3>Limits pro Tag</h3>
+    <section class="sgrp"><h3>Richtwerte pro Tag</h3>
       <label class="srow"><span class="sl">Kalorien höchstens</span><span class="nin"><input data-pref="kcalMax" inputmode="numeric" autocomplete="off"><i>kcal</i></span></label>
       <label class="srow"><span class="sl">Fett höchstens</span><span class="nin"><input data-pref="fatMax" inputmode="numeric" autocomplete="off"><i>g</i></span></label>
       <label class="srow"><span class="sl">Zucker höchstens</span><span class="nin"><input data-pref="sugarMax" inputmode="numeric" autocomplete="off"><i>g</i></span></label>

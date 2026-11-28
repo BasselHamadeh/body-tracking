@@ -768,9 +768,6 @@
     var h = '<div class="khead"><h2>' + (L.id === todayId() ? "Heutiges Training" : "Letztes Training") + '</h2><span class="fm">' + dateShort(L.id) + '</span></div>';
     h += '<div class="vchips">' + (st.min ? '<span><b>' + hm(st.min).replace(/ (h|min)$/, "") + '</b> ' + (st.min >= 60 ? "h" : "min") + '</span>' : '') + '<span><b>' + st.ex + '</b> Übungen</span><span><b>' + st.sets + '</b> Sätze</span><span><b>' + Math.round(st.vol).toLocaleString("de-DE") + '</b> kg' + (vtr && vtr.cls !== "new" ? ' <em class="' + vtr.cls + '">' + vtr.tx + '</em>' : '') + '</span></div>';
     var allNew = rows.every(function(r){ return r.tr.cls === "new"; }), prs = rows.filter(function(r){ return r.tr.cls === "pr"; }).length;
-    h += '<details class="vdet"><summary>Details</summary><ul class="vex">' + rows.map(function(r){
-      return '<li><div class="vn"><b>' + r.ex.name + '</b><span>' + repsLine(r.e) + '</span></div><span class="vt ' + r.tr.cls + '">' + r.tr.tx + '</span><div class="vnext ' + r.nt.cls + '">Nächstes Mal: <b>' + r.nt.tx + '</b></div></li>';
-    }).join("") + '</ul></details>';
     lt.innerHTML = h;
     // Progressive Overload je Übung
     var orows = ALLSTR.map(function(ex){
@@ -1147,7 +1144,7 @@
     var rows = LIM.map(function(l){ var v = t[l.k] || 0, pc = Math.min(100, v / l.max * 100), over = v > l.max, near = !over && v > l.max * 0.8; return '<div class="lim' + (over ? " over" : near ? " near" : "") + '"><span>' + l.n + '</span><b>' + Math.round(v) + ' / ' + l.max + ' ' + l.u + '</b><i style="width:' + pc + '%"></i></div>'; }).join("");
     var msgs = LIM.filter(function(l){ return (t[l.k] || 0) > l.max; }).map(function(l){ return l.n + " " + Math.round(t[l.k]) + " von " + l.max + " " + l.u; });
     box.hidden = !items.length;
-    box.innerHTML = '<div class="lt">Limits</div>' + rows + (msgs.length ? '<div class="lw">⚠ Über dem Limit: ' + msgs.join(", ") + '</div>' : '');
+    box.innerHTML = '<div class="lt">Limits</div>' + rows + (msgs.length ? '<div class="lw">Hinweis: etwas über dem Richtwert (' + msgs.join(", ") + ')</div>' : '');
     limOver = msgs.join("|");
   }
   function fixAmt(t, name){ var w = (name || "").split(/\s+/)[0] || ""; return t.replace(/^(\d+)\s*Stück\b/i, "$1 " + w); }
@@ -1209,9 +1206,9 @@
     if (b0.p < GOAL_PROT && a.p >= GOAL_PROT) return toast("🎯 Eiweißziel geschafft: " + Math.round(a.p) + " g");
     if (b0.k < GOAL_KCAL && a.k >= GOAL_KCAL) return toast("🎯 Kalorien voll: " + kn(a.k) + " kcal");
     if (b0.ml < wg && a.ml >= wg) return toast("💧 Wasserziel geschafft: " + liters(a.ml));
-    if (b0.k <= PREFS.kcalMax && a.k > PREFS.kcalMax) return toast("⚠️ Jetzt über " + kn(PREFS.kcalMax) + " kcal");
-    if (b0.s <= PREFS.sugarMax && a.s > PREFS.sugarMax) return toast("⚠️ Zucker jetzt über " + PREFS.sugarMax + " g");
-    if (b0.f <= PREFS.fatMax && a.f > PREFS.fatMax) return toast("⚠️ Fett jetzt über " + PREFS.fatMax + " g");
+    if (b0.k <= PREFS.kcalMax && a.k > PREFS.kcalMax) return toast("Hinweis: über " + kn(PREFS.kcalMax) + " kcal, kein Problem");
+    if (b0.s <= PREFS.sugarMax && a.s > PREFS.sugarMax) return toast("Hinweis: Zucker über " + PREFS.sugarMax + " g, kein Problem");
+    if (b0.f <= PREFS.fatMax && a.f > PREFS.fatMax) return toast("Hinweis: Fett über " + PREFS.fatMax + " g, kein Problem");
     var rest = kind === "water" ? (a.ml < wg ? "noch " + liters(wg - a.ml) : "Ziel ✓")
       : a.p < GOAL_PROT ? "noch " + Math.round(GOAL_PROT - a.p) + " g Eiweiß" : a.k < GOAL_KCAL ? "noch " + kn(GOAL_KCAL - a.k) + " kcal" : "alles drin ✓";
     toast(head + " · " + rest);
@@ -1257,11 +1254,11 @@
     if (s.k > PREFS.kcalMax) over.push("Kalorien " + s.k.toLocaleString("de-DE") + " / " + kn(PREFS.kcalMax));
     if (has("fat") && s.f > PREFS.fatMax) over.push("Fett " + Math.round(s.f) + " / " + PREFS.fatMax + " g");
     if (has("sugar") && s.s > PREFS.sugarMax) over.push("Zucker " + Math.round(s.s) + " / " + PREFS.sugarMax + " g");
-    var lw = $("#limits"); lw.hidden = !over.length; lw.textContent = over.length ? "⚠ Über dem Limit: " + over.join(", ") : "";
+    var lw = $("#limits"); lw.hidden = !over.length; lw.textContent = over.length ? "Hinweis: etwas über dem Richtwert (" + over.join(", ") + "). Kein Problem, morgen einfach etwas weniger." : "";
     renderScores();
 
     var box = $("#foodToday"); box.innerHTML = "";
-    $("#todayMeta").textContent = items.length ? items.length + (items.length === 1 ? " Eintrag · " : " Einträge · ") + s.k.toLocaleString("de-DE") + " kcal" : "";
+    $("#todayMeta").textContent = items.length ? items.length + (items.length === 1 ? " Eintrag · " : " Einträge · ") + s.k.toLocaleString("de-DE") + " kcal · " + Math.round(s.p) + " g Eiweiß" : "noch nichts";
     var more = $("#todayMore");
     if (!items.length){ var e = document.createElement("p"); e.className = "empty fempty"; e.textContent = "Noch nichts eingetragen. Füg oben etwas ein oder tippe auf einen gemerkten Eintrag."; box.appendChild(e); more.hidden = true; return; }
     // Nach Tageszeit gruppieren, gleiche Gerichte zusammenfassen, Neuestes zuerst
@@ -2272,8 +2269,9 @@
   document.addEventListener("toggle", function(ev){ var d = ev.target; if (!d || !d.dataset || !d.dataset.k) return; var st = foldSt(); st[d.dataset.k] = d.open; try { localStorage.setItem(FOLDKEY, JSON.stringify(st)); } catch (e) {} }, true);
 
   // ---------- Version ----------
-  var APP_VERSION = "4.2", APP_BUILT = "2026-11-27T13:37:41Z";
+  var APP_VERSION = "4.3", APP_BUILT = "2026-11-28T07:44:56Z";
   var CHANGES = [
+    ["4.3", "Richtwerte nur noch als ruhiger Hinweis, Details bei „Letztes Training“ raus, keine blaue Umrandung für heute, „Heute gegessen“ aufklappbar"],
     ["4.2", "iPhone: kein Zoom mehr durch Doppeltippen, Hochformat, Vibrations-Einstellung raus"],
     ["4.1", "Aufgeräumt: Heute, Muskeln, Rekorde und Maße raus, Notiz und Tauschen aus der Übung raus (Tauschen nur in den Einstellungen). Neuer kurzer Pausen-Ton, Musik läuft weiter. Dead Hang als erster Schritt nach „Training starten“. Bewertungen ohne Emojis, kg und Wdh. mittig, Schnell hinzufügen unter Heute gegessen und zugeklappt."],
     ["4.0", "Einstellungen (Zahnrad): Ziele, Limits, Pausen, Töne, Wiegetag, Design, Schriftgröße. Plan selbst anpassen, Übung tauschen (auch nur heute), Notiz pro Übung, Rekord-Meldung. Neue Muskelbilder, Muskeln pro Woche und Rekorde im Verlauf, Maße und Zielgewicht, Essen nachträglich ändern. Sicherung als Datei und automatisch, startet offline, eigene Schriften, strengere Sicherheitsregeln."],
